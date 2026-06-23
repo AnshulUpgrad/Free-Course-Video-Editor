@@ -1,0 +1,12 @@
+{
+  "title": "RAG Query Process",
+  "steps": [
+    "Embed the user query using the embedding model",
+    "Retrieve the top k similar vectors from the database",
+    "Construct the prompt with retrieved context and query",
+    "Pass the context-enriched prompt to the LLM",
+    "Generate and return the response"
+  ],
+  "layout": "fullscreen",
+  "renderMode": "fullscreen"
+}

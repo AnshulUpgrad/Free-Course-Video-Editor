@@ -1,0 +1,5 @@
+{
+  "term": "Cosine Similarity",
+  "definition": "A metric used to measure how similar two vectors are, calculated by finding the cosine of the angle between them in a multi-dimensional space.",
+  "renderMode": "fullscreen"
+}

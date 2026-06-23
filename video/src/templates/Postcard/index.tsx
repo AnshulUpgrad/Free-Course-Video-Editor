@@ -44,7 +44,7 @@ export const Postcard: React.FC<{ data: PostcardData }> = ({ data }) => {
   const title = data?.title ?? 'Postcard Title';
   const bullets = data?.bullets ?? [];
   const paragraph = data?.paragraph ?? 'Paragraph text goes here.';
-  const renderMode = data?.renderMode ?? 'fullscreen';
+
 
   const frame = useCurrentFrame();
   const { durationInFrames, fps } = useVideoConfig();
@@ -79,8 +79,8 @@ export const Postcard: React.FC<{ data: PostcardData }> = ({ data }) => {
 
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: renderMode === 'overlay' ? 'transparent' : COLORS.white,
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
+    backgroundColor: COLORS.white,
+    color: COLORS.primaryText,
     width: '100%',
     height: '100%',
   };
@@ -133,7 +133,7 @@ export const Postcard: React.FC<{ data: PostcardData }> = ({ data }) => {
 
   const titleStyle: React.CSSProperties = {
     ...TYPOGRAPHY.h2,
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primary,
+    color: COLORS.primary,
     marginBottom: '32px',
     textAlign: 'left',
     lineHeight: '1.2',
@@ -172,7 +172,7 @@ export const Postcard: React.FC<{ data: PostcardData }> = ({ data }) => {
             <p
               style={{
                 ...TYPOGRAPHY.body,
-                color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
+                color: COLORS.primaryText,
                 fontWeight: 400,
                 lineHeight: '1.6',
               }}
@@ -216,7 +216,7 @@ export const Postcard: React.FC<{ data: PostcardData }> = ({ data }) => {
                         marginRight: '16px',
                       }}
                     />
-                    <div style={{ flex: 1, color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText }}>{bullet}</div>
+                    <div style={{ flex: 1, color: COLORS.primaryText }}>{bullet}</div>
                   </li>
                 );
               })}

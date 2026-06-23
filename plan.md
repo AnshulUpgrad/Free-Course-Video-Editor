@@ -241,6 +241,17 @@ bottom: 100px
 
 No content should cross safe margins.
 
+## Layout Constraints for Specialized Templates
+
+### Half Screen Templates
+- **Constraint**: Must always cover the **right half** of the screen.
+- **Positioning**: Bound to `x: 960px` to `x: 1920px` (occupying the right 50% of the canvas), aligned with safe margin constraints on the right, top, and bottom.
+
+### Corner Box Templates
+- **Constraint**: Must appear at the **bottom right** of the video canvas.
+- **Positioning**: Positioned in the bottom-right quadrant, adhering to safe margins (`right: 120px`, `bottom: 100px`).
+
+
 ---
 
 # Animation System

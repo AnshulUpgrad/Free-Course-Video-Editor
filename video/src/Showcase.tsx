@@ -6,7 +6,6 @@ import { KeywordCard } from './templates/KeywordCard';
 import { DefinitionCard } from './templates/DefinitionCard';
 import { BulletList } from './templates/BulletList';
 import { StepSequence } from './templates/StepSequence';
-import { ProcessFlow } from './templates/ProcessFlow';
 import { ComparisonCard } from './templates/ComparisonCard';
 import { VisualExplanation } from './templates/VisualExplanation';
 import { Takeaways } from './templates/Takeaways';
@@ -23,14 +22,14 @@ export interface TimelineSlide {
 }
 
 export interface ShowcaseProps {
-  audioUrl: string;
+  audioUrl?: string;
   videoUrl?: string;
   renderMode?: RenderMode;
-  timeline: TimelineSlide[];
+  timeline?: TimelineSlide[];
 }
 
-export const Showcase: React.FC<ShowcaseProps> = ({ audioUrl, videoUrl, renderMode, timeline }) => {
-  const activeRenderMode = 'fullscreen';
+export const Showcase: React.FC<ShowcaseProps> = ({ audioUrl, videoUrl, renderMode, timeline = [] }) => {
+  const activeRenderMode = videoUrl ? 'overlay' : 'fullscreen';
 
   const renderTemplateOnly = (templateId: string, data: any) => {
     switch (templateId) {
@@ -46,15 +45,18 @@ export const Showcase: React.FC<ShowcaseProps> = ({ audioUrl, videoUrl, renderMo
         return <BulletList data={data} />;
       case 'StepSequence':
         return <StepSequence data={data} />;
-      case 'ProcessFlow':
-        return <ProcessFlow data={data} />;
       case 'ComparisonCard':
         return <ComparisonCard data={data} />;
       case 'VisualExplanation':
         return <VisualExplanation data={data} />;
       case 'PostcardBullets':
-      case 'PostcardParagraph':
-        return <Postcard data={data} />;
+      case 'PostcardParagraph': {
+        const resolvedData = { ...data };
+        if (resolvedData.image && typeof resolvedData.image === 'string' && !resolvedData.image.startsWith('http') && !resolvedData.image.startsWith('data:')) {
+          resolvedData.image = staticFile(resolvedData.image);
+        }
+        return <Postcard data={resolvedData} />;
+      }
       case 'Takeaways':
         return <Takeaways data={data} />;
       default:

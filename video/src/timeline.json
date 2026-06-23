@@ -1,0 +1,200 @@
+{
+  "videoUrl": "uploads/Sample.MP4",
+  "audioUrl": "",
+  "timeline": [
+    {
+      "templateId": "ChapterDivider",
+      "startTime": 0,
+      "stopTime": 2.5,
+      "data": {
+        "module": "Module 03",
+        "title": "Retrieval Systems & Vector Indexing"
+      }
+    },
+    {
+      "templateId": "ConceptCard",
+      "startTime": 2.5,
+      "stopTime": 5.0,
+      "data": {
+        "concept": "Retrieval-Augmented Generation"
+      }
+    },
+    {
+      "templateId": "KeywordCard",
+      "startTime": 5.0,
+      "stopTime": 7.0,
+      "data": {
+        "keyword": "Embeddings"
+      }
+    },
+    {
+      "templateId": "DefinitionCard",
+      "startTime": 7.0,
+      "stopTime": 10.0,
+      "data": {
+        "term": "Large Language Model",
+        "definition": "An AI model trained on massive text corpora to understand and generate human-like language. Its advantages are the ease of adoption "
+      }
+    },
+    {
+      "templateId": "DefinitionCard",
+      "startTime": 10.0,
+      "stopTime": 13.5,
+      "data": {
+        "term": "Cosine Similarity",
+        "definition": "A metric used to measure how similar two vectors are, calculated by finding the cosine of the angle between them in a multi-dimensional space."
+      }
+    },
+    {
+      "templateId": "BulletList",
+      "startTime": 13.5,
+      "stopTime": 17.0,
+      "data": {
+        "title": "Benefits of Vector Embeddings",
+        "items": [
+          "Captures semantic meaning beyond exact keywords",
+          "Enables multi-modal comparison (text, images, audio)",
+          "Reduces dimensionality while retaining critical context",
+          "Powers similarity search in high-dimensional vector databases"
+        ],
+        "layout": "fullscreen"
+      }
+    },
+    {
+      "templateId": "BulletList",
+      "startTime": 17.0,
+      "stopTime": 20.5,
+      "data": {
+        "title": "RAG Pipeline Components",
+        "items": [
+          "Document Loader & Preprocessing",
+          "Vector Embedding Generation API",
+          "Vector DB Storage & Indexing",
+          "Semantic Search & Context Retrieval",
+          "LLM Prompt Augmentation"
+        ],
+        "layout": "halfscreen"
+      }
+    },
+    {
+      "templateId": "StepSequence",
+      "startTime": 20.5,
+      "stopTime": 25.5,
+      "data": {
+        "title": "RAG Pipeline Steps",
+        "steps": [
+          "Parse documents and extract clean text raw content.",
+          "Split text into standard chunks with overlap.",
+          "Submit chunks to embedding API to generate vectors.",
+          "Index vectors into a vector database for quick search."
+        ],
+        "layout": "fullscreen"
+      }
+    },
+    {
+      "templateId": "StepSequence",
+      "startTime": 25.5,
+      "stopTime": 30.0,
+      "data": {
+        "title": "RAG Query Process",
+        "steps": [
+          "Embed the user query using the embedding model",
+          "Retrieve the top k similar vectors from the database",
+          "Construct the prompt with retrieved context and query",
+          "Pass the context-enriched prompt to the LLM",
+          "Generate and return the response"
+        ],
+        "layout": "halfscreen"
+      }
+    },
+    {
+      "templateId": "ComparisonCard",
+      "startTime": 30.0,
+      "stopTime": 34.5,
+      "data": {
+        "title": "Traditional vs Semantic Search",
+        "leftTitle": "Traditional Search",
+        "rightTitle": "Semantic Search",
+        "rows": [
+          ["Keyword Matching and additonal concepts that will be covered as we follow through with the rest of this content", "Concept & Context Matching"],
+          ["Requires Exact Query Words", "Handles Synonyms & Intent"],
+          ["No Multi-modal Support", "Compares Text, Images, and Audio"],
+          ["Fails on Complex Questions", "Synthesizes Semantic Similarity"]
+        ]
+      }
+    },
+    {
+      "templateId": "VisualExplanation",
+      "startTime": 34.5,
+      "stopTime": 46.16,
+      "data": {
+        "nodes": [
+          "Load Raw PDF Files",
+          "Split Into Standard Text Chunks",
+          "Generate Semantic Vector Embeddings",
+          "Store Chunks In Vector Database",
+          "Perform Nearest Neighbors Indexing",
+          "Receive User Search Query",
+          "Retrieve Similar Context Vectors",
+          "Generate Context Enriched Response"
+        ],
+        "caption": "Figure 1.1: Document processing pipeline transforming raw text files into high-dimensional semantic embeddings stored in the vector database."
+      }
+    },
+    {
+      "templateId": "PostcardBullets",
+      "startTime": 46.16,
+      "stopTime": 50.66,
+      "data": {
+        "image": "image.png",
+        "variant": "bullets",
+        "title": "Similarity Matching Process",
+        "bullets": [
+          "User submits query which is converted into query embedding vector.",
+          "Nearest neighbors are computed using cosine distance metric.",
+          "Matches are fetched from the semantic index database.",
+          "Result context is returned to prompt synthesis engine."
+        ]
+      }
+    },
+    {
+      "templateId": "PostcardParagraph",
+      "startTime": 50.66,
+      "stopTime": 54.66,
+      "data": {
+        "image": "image.png",
+        "variant": "paragraph",
+        "title": "Understanding Semantic Search",
+        "paragraph": "Semantic search seeks to improve search accuracy by understanding the searcher's intent and the contextual meaning of terms. Instead of looking for exact word matches, it maps concepts into a high-dimensional vector space, allowing computers to associate related meanings, synonyms, and multi-modal assets dynamically."
+      }
+    },
+    {
+      "templateId": "Takeaways",
+      "startTime": 54.66,
+      "stopTime": 58.66,
+      "data": {
+        "title": "Key Takeaways",
+        "points": [
+          "Retrieval adds external domain-specific context in real-time.",
+          "Rich contexts significantly improve prompt completion accuracy.",
+          "Providing sources increases auditability and user trust."
+        ],
+        "layout": "fullscreen"
+      }
+    },
+    {
+      "templateId": "Takeaways",
+      "startTime": 58.66,
+      "stopTime": 62.66,
+      "data": {
+        "title": "RAG Implementation Takeaways",
+        "points": [
+          "Retrieval adds external domain-specific context in real-time.",
+          "Rich contexts significantly improve prompt completion accuracy.",
+          "Providing sources increases auditability and user trust."
+        ],
+        "layout": "halfscreen"
+      }
+    }
+  ]
+}

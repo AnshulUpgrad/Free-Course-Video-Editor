@@ -1,0 +1,10 @@
+{
+  "image": "uploads/image.png",
+  "nodes": [
+    "Raw PDF Documents",
+    "Embedding Model Pipeline",
+    "Vector Database Storage"
+  ],
+  "caption": "Figure 1.1: Document processing pipeline transforming raw text files into high-dimensional semantic embeddings stored in the vector database.",
+  "renderMode": "fullscreen"
+}

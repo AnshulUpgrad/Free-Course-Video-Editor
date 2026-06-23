@@ -1,0 +1,11 @@
+{
+  "title": "Vector DBs vs Relational DBs",
+  "leftTitle": "Vector DBs",
+  "rightTitle": "Relational DBs",
+  "rows": [
+    ["Optimized for high-dimensional semantic search", "Optimized for structured SQL queries"],
+    ["Stores embeddings/vectors", "Stores tabular columns/rows"],
+    ["Approximate nearest neighbors index", "B-Tree/Hash indexes"]
+  ],
+  "renderMode": "fullscreen"
+}

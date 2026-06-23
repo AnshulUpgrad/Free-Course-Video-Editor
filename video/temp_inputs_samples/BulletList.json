@@ -1,0 +1,11 @@
+{
+  "title": "Benefits of Vector Embeddings",
+  "items": [
+    "Captures semantic meaning beyond exact keywords",
+    "Enables multi-modal comparison (text, images, audio)",
+    "Reduces dimensionality while retaining critical context",
+    "Powers similarity search in high-dimensional vector databases"
+  ],
+  "renderMode": "fullscreen",
+  "layout": "fullscreen | halfscreen"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Key Takeaways",
+  "points": [
+    "Vector search is highly semantic and context-aware",
+    "RAG reduces LLM hallucinations significantly",
+    "Proper metadata filtering speeds up retrieval"
+  ],
+  "renderMode": "fullscreen"
+}

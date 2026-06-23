@@ -4,6 +4,7 @@ import { COLORS, TYPOGRAPHY, LAYOUT } from '../../design-system/tokens';
 import { useTransitionProgress } from '../../design-system/transitions';
 
 export interface ComparisonCardData {
+  title?: string;
   leftTitle: string;
   rightTitle: string;
   rows: [string, string][];
@@ -11,6 +12,7 @@ export interface ComparisonCardData {
 }
 
 export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data }) => {
+  const title = data?.title ?? 'Traditional vs Semantic';
   const leftTitle = data?.leftTitle ?? 'Option A';
   const rightTitle = data?.rightTitle ?? 'Option B';
   const rows = data?.rows ?? [];
@@ -19,6 +21,15 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { exitProgress, combined } = useTransitionProgress();
+
+  // Title case helper for headers
+  const toTitleCase = (str: string) => {
+    if (!str) return '';
+    return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  // Force heading to all CAPS
+  const uppercaseTitle = title.toUpperCase();
 
   // Central divider line draw (runs in first 15 frames)
   const dividerHeight = spring({
@@ -52,8 +63,19 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
     bottom: `${LAYOUT.safeMargins.bottom}px`,
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     opacity: combined,
+  };
+
+  const titleStyle: React.CSSProperties = {
+    ...TYPOGRAPHY.h2,
+    textTransform: 'uppercase',
+    color: renderMode === 'overlay' ? COLORS.white : COLORS.primary,
+    textAlign: 'center',
+    marginBottom: '64px',
+    borderBottom: `2px solid ${renderMode === 'overlay' ? 'rgba(255, 255, 255, 0.2)' : `${COLORS.primary}22`}`,
+    paddingBottom: '16px',
+    letterSpacing: '0.02em',
   };
 
   const tableContainerStyle: React.CSSProperties = {
@@ -80,8 +102,9 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
 
   const headerStyle = (align: 'right' | 'left' | 'center'): React.CSSProperties => ({
     ...TYPOGRAPHY.h2,
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primary,
+    color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
     textAlign: align,
+    fontWeight: '700',
     opacity: headerOpacity,
     transform: `translateY(${interpolate(headerOpacity, [0, 1], [15, 0])}px)`,
     paddingBottom: '16px',
@@ -91,13 +114,16 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
   return (
     <AbsoluteFill style={containerStyle}>
       <div style={safeAreaStyle}>
+        {/* Main Heading */}
+        <h2 style={titleStyle}>{uppercaseTitle}</h2>
+
         <div style={tableContainerStyle}>
           {/* Vertical Divider */}
           <div style={verticalDividerStyle} />
 
           {/* Table Headers */}
-          <h2 style={headerStyle('center')}>{leftTitle}</h2>
-          <h2 style={headerStyle('center')}>{rightTitle}</h2>
+          <h2 style={headerStyle('center')}>{toTitleCase(leftTitle)}</h2>
+          <h2 style={headerStyle('center')}>{toTitleCase(rightTitle)}</h2>
 
           {/* Comparison Rows */}
           {rows.map((row, index) => {
@@ -180,7 +206,7 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
                       fontSize: TYPOGRAPHY.body.fontSize,
                       fontWeight: TYPOGRAPHY.body.fontWeight,
                       lineHeight: TYPOGRAPHY.body.lineHeight,
-                      color: renderMode === 'overlay' ? 'rgba(255, 255, 255, 0.8)' : COLORS.secondaryText,
+                      color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
                     }}
                   >
                     {row[1]}
@@ -196,6 +222,7 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
 };
 
 export const defaultComparisonData: ComparisonCardData = {
+  title: 'Traditional vs Semantic Search',
   leftTitle: 'Traditional Search',
   rightTitle: 'Semantic Search',
   rows: [

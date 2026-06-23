@@ -1,15 +1,16 @@
 export const COLORS = {
-  primary: '#EF2C3C',
-  secondaryRed: '#D61F31',
+  primary: 'rgb(238, 37, 54)',
+  secondaryRed: 'rgb(238, 37, 54)',
   darkBg: '#111827',
   lightBg: '#F8F9FB',
   primaryText: '#1F2937',
   secondaryText: '#6B7280',
   white: '#FFFFFF',
+  upgradRed: 'rgb(238, 37, 54)',
 };
 
 export const TYPOGRAPHY = {
-  fontFamily: 'Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  fontFamily: 'Lato, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   h1: {
     fontSize: '72px',
     fontWeight: '700',
@@ -41,4 +42,14 @@ export const LAYOUT = {
     top: 100,
     bottom: 100,
   },
+  halfScreen: {
+    width: 960,
+    left: 960,
+  },
+  cornerBox: {
+    // Default safe positions and standard dimensions for corner boxes
+    right: 120,
+    top: '50%',
+  },
 };
+

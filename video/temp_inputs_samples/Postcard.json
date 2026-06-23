@@ -1,0 +1,11 @@
+{
+  "image": "uploads/image.png",
+  "variant": "bullets",
+  "title": "Postcard Title",
+  "bullets": [
+    "Bullet point number one",
+    "Bullet point number two"
+  ],
+  "paragraph": "A descriptive paragraph explaining the core theme of the slide.",
+  "renderMode": "fullscreen"
+}
