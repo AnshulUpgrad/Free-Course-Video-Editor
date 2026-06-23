@@ -1,0 +1,51 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python Cache & Builds
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+build/
+dist/
+
+# Node/Remotion Dependencies and Outputs
+node_modules/
+video/node_modules/
+video/out/
+video/showcase.mp4
+
+# Environment variables (Secrets)
+.env
+
+# Runtime / Temp directories
+uploads/
+renders/
+transcriptions/
+timelines/
+
+# Exclude dynamic uploads within Remotion's public folder
+video/public/uploads/*
+
+# Large Media Files (exceeding GitHub limits or local test media)
+Sample.MP4
+sample.mp3
+*.mp4
+*.mp3
+*.wav
+*.m4a
+*.flac
+*.webm
+
+# IDE configurations
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
