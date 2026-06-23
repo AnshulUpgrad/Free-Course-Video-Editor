@@ -10,14 +10,13 @@ export interface ConceptCardData {
 
 export const ConceptCard: React.FC<{ data: ConceptCardData }> = ({ data }) => {
   const concept = data?.concept ?? 'Concept Name';
-  const renderMode = data?.renderMode ?? 'fullscreen';
 
   // Fade in + scale from 97% to 100% on entry, and out on exit
   const transitionStyle = useScaleTransition(0.97);
 
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: renderMode === 'overlay' ? 'transparent' : COLORS.primary,
+    backgroundColor: COLORS.primary,
     color: COLORS.white,
     display: 'flex',
     flexDirection: 'column',

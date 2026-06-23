@@ -175,7 +175,6 @@ export const VisualExplanation: React.FC<{ data: VisualExplanationData }> = ({ d
   const image = data?.image;
   const nodes = data?.nodes;
   const caption = data?.caption ?? 'Figure: System Architecture Diagram';
-  const renderMode = data?.renderMode ?? 'fullscreen';
 
   const frame = useCurrentFrame();
   const { durationInFrames, fps } = useVideoConfig();
@@ -199,7 +198,7 @@ export const VisualExplanation: React.FC<{ data: VisualExplanationData }> = ({ d
 
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: renderMode === 'overlay' ? 'transparent' : COLORS.lightBg,
+    backgroundColor: COLORS.lightBg,
     color: COLORS.primaryText,
     width: '100%',
     height: '100%',
@@ -253,7 +252,7 @@ export const VisualExplanation: React.FC<{ data: VisualExplanationData }> = ({ d
     opacity: captionReveal,
     transform: `translateY(${interpolate(captionReveal, [0, 1], [15, 0])}px)`,
     ...TYPOGRAPHY.caption,
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.secondaryText,
+    color: COLORS.secondaryText,
     lineHeight: '1.4',
   };
 

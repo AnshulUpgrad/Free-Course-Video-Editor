@@ -26,8 +26,8 @@ export const Takeaways: React.FC<{ data: TakeawaysData }> = ({ data }) => {
 
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: renderMode === 'overlay' ? 'transparent' : COLORS.white,
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
+    backgroundColor: (layout === 'halfscreen' && renderMode === 'overlay') ? 'transparent' : COLORS.white,
+    color: COLORS.primaryText,
     width: '100%',
     height: '100%',
     position: 'relative',
@@ -155,7 +155,7 @@ export const Takeaways: React.FC<{ data: TakeawaysData }> = ({ data }) => {
 
   const titleStyle: React.CSSProperties = {
     ...TYPOGRAPHY.h2,
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primary,
+    color: COLORS.primary,
     marginBottom: '56px',
     textAlign: 'left',
   };
@@ -225,7 +225,7 @@ export const Takeaways: React.FC<{ data: TakeawaysData }> = ({ data }) => {
                     />
                   </svg>
                 </div>
-                <div style={{ flex: 1, color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText }}>{point}</div>
+                <div style={{ flex: 1, color: COLORS.primaryText }}>{point}</div>
               </li>
             );
           })}

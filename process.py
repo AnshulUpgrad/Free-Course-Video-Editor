@@ -7,6 +7,7 @@ import subprocess
 import shutil
 import json
 from dotenv import load_dotenv
+from timeline_service import process_transcript_to_timeline
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -165,164 +166,15 @@ def transcribe_audio(audio_filepath, filename, model_size='base'):
 
     return transcription_payload
 
-def split_transcript_into_sentences(transcription_payload):
-    """
-    Groups word-level timestamps from Whisper into sentences based on punctuation.
-    """
-    sentences = []
-    current_words = []
-    
-    all_words = []
-    for segment in transcription_payload.get('segments', []):
-        all_words.extend(segment.get('words', []))
-        
-    if not all_words:
-        logger.warning("No word-level timestamps found. Falling back to segment-level splitting.")
-        for i, seg in enumerate(transcription_payload.get('segments', [])):
-            sentences.append({
-                'index': i,
-                'start': seg.get('start', 0.0),
-                'end': seg.get('end', 0.0),
-                'text': seg.get('text', '').strip()
-            })
-        return sentences
-
-    sentence_idx = 0
-    for word_info in all_words:
-        word_text = word_info.get('word', '')
-        current_words.append(word_info)
-        
-        clean_word = word_text.strip()
-        if clean_word and clean_word[-1] in {'.', '!', '?'}:
-            sentence_text = " ".join([w.get('word', '').strip() for w in current_words])
-            sentences.append({
-                'index': sentence_idx,
-                'start': current_words[0].get('start', 0.0),
-                'end': current_words[-1].get('end', 0.0),
-                'text': sentence_text
-            })
-            sentence_idx += 1
-            current_words = []
-            
-    if current_words:
-        sentence_text = " ".join([w.get('word', '').strip() for w in current_words])
-        sentences.append({
-            'index': sentence_idx,
-            'start': current_words[0].get('start', 0.0),
-            'end': current_words[-1].get('end', 0.0),
-            'text': sentence_text
-        })
-        
-    return sentences
-
-def analyze_script(sentences, filename, openrouter_model='google/gemini-2.5-flash'):
-    """
-    Segment sentences into slides/chunks and map to templates using OpenRouter API.
-    """
-    openrouter_key = os.environ.get('OPENROUTER_API_KEY')
-    if not openrouter_key:
-        logger.error("OPENROUTER_API_KEY environment variable is not set")
-        return None
-
-    try:
-        system_prompt = load_system_prompt('video_director.md')
-    except Exception as e:
-        logger.error(f"Failed to load system prompt: {e}")
-        return None
-
-    headers = {
-        "Authorization": f"Bearer {openrouter_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://127.0.0.1:5000",
-        "X-Title": "Educational Video AI Editor"
-    }
-    
-    payload = {
-        "model": openrouter_model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": json.dumps(sentences, indent=2)}
-        ],
-        "response_format": {"type": "json_object"}
-    }
-    
-    logger.info(f"Calling OpenRouter Gemini API with model: {openrouter_model}")
-    try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=120
-        )
-        
-        if response.status_code != 200:
-            logger.error(f"OpenRouter API returned error {response.status_code}: {response.text}")
-            return None
-            
-        result_json = response.json()
-        raw_content = result_json['choices'][0]['message']['content'].strip()
-        
-        if raw_content.startswith("```json"):
-            raw_content = raw_content[7:]
-        if raw_content.endswith("```"):
-            raw_content = raw_content[:-3]
-        raw_content = raw_content.strip()
-        
-        return json.loads(raw_content)
-    except Exception as e:
-        logger.error(f"Failed to communicate with or parse response from OpenRouter: {e}")
-        return None
-
-def build_timeline(analysis_result, sentences, total_duration):
-    """
-    Constructs the Remotion timeline props.
-    """
-    timeline_segments = []
-    last_end_time = 0.0
-    
-    chunks = analysis_result.get('chunks', [])
-    for i, chunk in enumerate(chunks):
-        s_idx = chunk.get('start_sentence_index', 0)
-        e_idx = chunk.get('end_sentence_index', 0)
-        
-        s_idx = max(0, min(s_idx, len(sentences) - 1))
-        e_idx = max(0, min(e_idx, len(sentences) - 1))
-        if s_idx > e_idx:
-            s_idx, e_idx = e_idx, s_idx
-            
-        start_time = sentences[s_idx]['start']
-        end_time = sentences[e_idx]['end']
-        
-        if i == 0:
-            start_time = 0.0
-        else:
-            start_time = last_end_time
-            
-        if i == len(chunks) - 1:
-            end_time = total_duration
-            
-        duration = max(0.5, end_time - start_time)
-        end_time = start_time + duration
-        last_end_time = end_time
-        
-        duration_in_frames = int(duration * 30)
-        
-        timeline_segments.append({
-            "templateId": chunk.get('template_id'),
-            "durationInFrames": duration_in_frames,
-            "startTime": round(start_time, 2),
-            "endTime": round(end_time, 2),
-            "data": chunk.get('data', {})
-        })
-        
-    return timeline_segments
-
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python process.py <path_to_video_file>")
-        sys.exit(1)
-        
-    video_path = sys.argv[1]
+    import argparse
+    parser = argparse.ArgumentParser(description="Process video timeline and optionally render it.")
+    parser.add_argument("video_path", help="Path to the source video file")
+    parser.add_argument("--no-render", action="store_true", help="Skip rendering and only update the timeline for Remotion Studio preview")
+    
+    args = parser.parse_args()
+    
+    video_path = args.video_path
     if not os.path.exists(video_path):
         print(f"Error: Video file not found at '{video_path}'")
         sys.exit(1)
@@ -357,54 +209,24 @@ def main():
         with open(transcription_file, 'r', encoding='utf-8') as f:
             transcription_payload = json.load(f)
             
-    # 3. Split into sentences
-    sentences = split_transcript_into_sentences(transcription_payload)
-    if not sentences:
-        logger.error("Failed to split transcript into sentences.")
+    # 3. Analyze and build timeline configuration using timeline_service
+    timeline_file = os.path.join(TIMELINES_FOLDER, f"{base_name}.json")
+    
+    # Force generating/updating the timeline for preview purposes
+    logger.info("Generating timeline configuration...")
+    timeline_payload = process_transcript_to_timeline(
+        base_name=base_name,
+        transcription_payload=transcription_payload,
+        video_path=video_path
+    )
+    if not timeline_payload:
+        logger.error("Failed to generate timeline configuration.")
         sys.exit(1)
         
-    # 4. Analyze/Segment with OpenRouter
-    timeline_file = os.path.join(TIMELINES_FOLDER, f"{base_name}.json")
-    if not os.path.exists(timeline_file):
-        analysis_result = analyze_script(sentences, audio_filename)
-        if not analysis_result:
-            logger.error("Script analysis / segmentation failed.")
-            sys.exit(1)
-            
-        total_duration = transcription_payload.get('duration', 0.0)
-        if total_duration == 0.0:
-            total_duration = sentences[-1]['end'] if sentences else 0.0
-            
-        timeline_segments = build_timeline(analysis_result, sentences, total_duration)
-        
-        # Copy audio file to Remotion's public uploads directory
-        dest_audio_path = os.path.join(VIDEO_PUBLIC_UPLOADS, audio_filename)
-        try:
-            shutil.copy2(audio_path, dest_audio_path)
-            logger.info(f"Copied audio to Remotion public uploads: {dest_audio_path}")
-        except Exception as e:
-            logger.error(f"Failed to copy audio to Remotion public uploads: {e}")
-            
-        # Copy video file to Remotion's public uploads directory
-        video_filename = os.path.basename(video_path)
-        dest_video_path = os.path.join(VIDEO_PUBLIC_UPLOADS, video_filename)
-        try:
-            shutil.copy2(video_path, dest_video_path)
-            logger.info(f"Copied video to Remotion public uploads: {dest_video_path}")
-        except Exception as e:
-            logger.error(f"Failed to copy video to Remotion public uploads: {e}")
-            
-        timeline_payload = {
-            "audioUrl": f"uploads/{audio_filename}",
-            "videoUrl": f"uploads/{video_filename}",
-            "timeline": timeline_segments
-        }
-        
-        with open(timeline_file, 'w', encoding='utf-8') as f:
-            json.dump(timeline_payload, f, indent=2, ensure_ascii=False)
-        logger.info(f"Saved timeline config to {timeline_file}")
-    else:
-        logger.info(f"Timeline config already exists at {timeline_file}")
+    if args.no_render:
+        logger.info("Timeline configuration generated successfully. --no-render is set, skipping video rendering.")
+        print(f"\nSUCCESS: Timeline configuration copied directly to Remotion Studio preview at video/src/timeline.json.\n")
+        sys.exit(0)
         
     # 5. Render Video using Remotion CLI
     output_filename = f"{base_name}_rendered.mp4"

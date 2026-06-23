@@ -7,6 +7,7 @@ import shutil
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
+from timeline_service import process_transcript_to_timeline
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -327,9 +328,9 @@ def split_transcript_into_sentences(transcription_payload):
 @app.route('/api/analyze', methods=['POST'])
 def analyze_script():
     """
-    Groups sentences into slides/chunks and maps them to Remotion templates using OpenRouter Gemini API.
+    Groups sentences into slides/chunks and maps them to Remotion templates using timeline_service.
     Expects JSON body:
-      - filename: base audio filename (e.g. sample.mp3)
+      - filename: base audio or video filename (e.g. sample.mp3, Sample.MP4)
       - model: optional OpenRouter model (default: google/gemini-2.5-flash)
     """
     data = request.json or {}
@@ -351,151 +352,34 @@ def analyze_script():
     with open(json_path, 'r', encoding='utf-8') as f:
         transcription_payload = json.load(f)
         
-    # 1. Split into sentences with timestamps
-    sentences = split_transcript_into_sentences(transcription_payload)
-    if not sentences:
-        return jsonify({'error': 'Could not extract sentences from transcription payload'}), 400
-        
-    # 2. Get OpenRouter API credentials
-    openrouter_key = os.environ.get('OPENROUTER_API_KEY')
-    if not openrouter_key:
-        return jsonify({'error': 'OPENROUTER_API_KEY environment variable is not set'}), 500
-        
-    # 3. Call OpenRouter Gemini API
+    # Search for corresponding video file in uploads folder
+    video_path = None
+    for ext in ['mp4', 'webm', 'MP4', 'mkv', 'avi', 'mov']:
+        p = os.path.join(UPLOAD_FOLDER, f"{base_name}.{ext}")
+        if os.path.exists(p):
+            video_path = p
+            break
+            
     try:
-        system_prompt = load_system_prompt('video_director.md')
-    except Exception as e:
-        logger.error(f"Failed to load system prompt: {e}")
-        return jsonify({'error': f"Failed to load system prompt: {e}"}), 500
-
-    headers = {
-        "Authorization": f"Bearer {openrouter_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://127.0.0.1:5000",
-        "X-Title": "Educational Video AI Editor"
-    }
-    
-    payload = {
-        "model": openrouter_model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": json.dumps(sentences, indent=2)}
-        ],
-        "response_format": {"type": "json_object"}
-    }
-    
-    logger.info(f"Calling OpenRouter Gemini API with model: {openrouter_model}")
-    try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=120
+        timeline_payload = process_transcript_to_timeline(
+            base_name=base_name,
+            transcription_payload=transcription_payload,
+            openrouter_model=openrouter_model,
+            video_path=video_path
         )
         
-        if response.status_code != 200:
-            logger.error(f"OpenRouter API returned error {response.status_code}: {response.text}")
-            return jsonify({'error': f"OpenRouter API returned error {response.status_code}"}), 502
+        if not timeline_payload:
+            return jsonify({'error': 'Timeline generation service failed. Check logs for details.'}), 500
             
-        result_json = response.json()
-        raw_content = result_json['choices'][0]['message']['content'].strip()
+        return jsonify({
+            'message': 'AI Script analysis and timeline generation completed successfully',
+            'timeline_file': f"{base_name}.json",
+            'timeline': timeline_payload
+        }), 200
         
-        if raw_content.startswith("```json"):
-            raw_content = raw_content[7:]
-        if raw_content.endswith("```"):
-            raw_content = raw_content[:-3]
-        raw_content = raw_content.strip()
-        
-        analysis_result = json.loads(raw_content)
     except Exception as e:
-        logger.error(f"Failed to communicate with or parse response from OpenRouter: {e}")
-        return jsonify({'error': f"LLM analysis failed: {e}"}), 502
-        
-    # 4. Snap boundaries and calculate durations in frames
-    total_duration = transcription_payload.get('duration', 0.0)
-    if total_duration == 0.0:
-        total_duration = sentences[-1]['end'] if sentences else 0.0
-        
-    timeline_segments = []
-    last_end_time = 0.0
-    
-    chunks = analysis_result.get('chunks', [])
-    for i, chunk in enumerate(chunks):
-        s_idx = chunk.get('start_sentence_index', 0)
-        e_idx = chunk.get('end_sentence_index', 0)
-        
-        s_idx = max(0, min(s_idx, len(sentences) - 1))
-        e_idx = max(0, min(e_idx, len(sentences) - 1))
-        if s_idx > e_idx:
-            s_idx, e_idx = e_idx, s_idx
-            
-        start_time = sentences[s_idx]['start']
-        end_time = sentences[e_idx]['end']
-        
-        if i == 0:
-            start_time = 0.0
-        else:
-            start_time = last_end_time
-            
-        if i == len(chunks) - 1:
-            end_time = total_duration
-            
-        duration = max(0.5, end_time - start_time)
-        end_time = start_time + duration
-        last_end_time = end_time
-        
-        duration_in_frames = int(duration * 30)
-        
-        timeline_segments.append({
-            "templateId": chunk.get('template_id'),
-            "durationInFrames": duration_in_frames,
-            "startTime": round(start_time, 2),
-            "endTime": round(end_time, 2),
-            "data": chunk.get('data', {})
-        })
-        
-    # Find source audio path
-    src_audio_path = os.path.join(UPLOAD_FOLDER, f"{base_name}.mp3")
-    audio_ext = "mp3"
-    if not os.path.exists(src_audio_path):
-        for ext in ['wav', 'm4a', 'flac']:
-            if os.path.exists(os.path.join(UPLOAD_FOLDER, f"{base_name}.{ext}")):
-                src_audio_path = os.path.join(UPLOAD_FOLDER, f"{base_name}.{ext}")
-                audio_ext = ext
-                break
-                
-    dest_filename = f"{base_name}.{audio_ext}"
-    dest_audio_path = os.path.join(VIDEO_PUBLIC_UPLOADS, dest_filename)
-    
-    if os.path.exists(src_audio_path):
-        try:
-            shutil.copy2(src_audio_path, dest_audio_path)
-            logger.info(f"Copied audio to Remotion public uploads: {dest_audio_path}")
-        except Exception as e:
-            logger.error(f"Failed to copy audio to Remotion public uploads: {e}")
-    else:
-        logger.warning(f"Source audio file not found, cannot copy to Remotion public uploads: {src_audio_path}")
-            
-    audio_path = f"uploads/{dest_filename}"
-                
-    timeline_payload = {
-        "audioUrl": audio_path,
-        "timeline": timeline_segments
-    }
-    
-    output_filename = f"{base_name}.json"
-    output_path = os.path.join(TIMELINES_FOLDER, output_filename)
-    
-    with open(output_path, 'w', encoding='utf-8') as out_f:
-        json.dump(timeline_payload, out_f, indent=2, ensure_ascii=False)
-        
-    logger.info(f"Saved timeline mapping to {output_path}")
-    
-    return jsonify({
-        'message': 'AI Script analysis and timeline generation completed successfully',
-        'timeline_file': output_filename,
-        'timeline': timeline_payload
-    }), 200
+        logger.error(f"Error in analyze_script service execution: {e}", exc_info=True)
+        return jsonify({'error': f'Timeline processing failed: {str(e)}'}), 500
 
 @app.route('/api/render', methods=['POST'])
 def render_video():

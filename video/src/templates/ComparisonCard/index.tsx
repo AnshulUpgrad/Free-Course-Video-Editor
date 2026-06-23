@@ -16,7 +16,6 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
   const leftTitle = data?.leftTitle ?? 'Option A';
   const rightTitle = data?.rightTitle ?? 'Option B';
   const rows = data?.rows ?? [];
-  const renderMode = data?.renderMode ?? 'fullscreen';
 
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -49,8 +48,8 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
 
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: renderMode === 'overlay' ? 'transparent' : COLORS.lightBg,
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
+    backgroundColor: COLORS.lightBg,
+    color: COLORS.primaryText,
     width: '100%',
     height: '100%',
   };
@@ -70,10 +69,10 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
   const titleStyle: React.CSSProperties = {
     ...TYPOGRAPHY.h2,
     textTransform: 'uppercase',
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primary,
+    color: COLORS.primary,
     textAlign: 'center',
     marginBottom: '64px',
-    borderBottom: `2px solid ${renderMode === 'overlay' ? 'rgba(255, 255, 255, 0.2)' : `${COLORS.primary}22`}`,
+    borderBottom: `2px solid ${COLORS.primary}22`,
     paddingBottom: '16px',
     letterSpacing: '0.02em',
   };
@@ -102,13 +101,13 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
 
   const headerStyle = (align: 'right' | 'left' | 'center'): React.CSSProperties => ({
     ...TYPOGRAPHY.h2,
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
+    color: COLORS.primaryText,
     textAlign: align,
     fontWeight: '700',
     opacity: headerOpacity,
     transform: `translateY(${interpolate(headerOpacity, [0, 1], [15, 0])}px)`,
     paddingBottom: '16px',
-    borderBottom: `2px solid ${renderMode === 'overlay' ? 'rgba(255, 255, 255, 0.2)' : `${COLORS.primary}22`}`,
+    borderBottom: `2px solid ${COLORS.primary}22`,
   });
 
   return (
@@ -171,7 +170,7 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
                       fontSize: TYPOGRAPHY.body.fontSize,
                       fontWeight: TYPOGRAPHY.body.fontWeight,
                       lineHeight: TYPOGRAPHY.body.lineHeight,
-                      color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
+                      color: COLORS.primaryText,
                     }}
                   >
                     {row[0]}
@@ -206,7 +205,7 @@ export const ComparisonCard: React.FC<{ data: ComparisonCardData }> = ({ data })
                       fontSize: TYPOGRAPHY.body.fontSize,
                       fontWeight: TYPOGRAPHY.body.fontWeight,
                       lineHeight: TYPOGRAPHY.body.lineHeight,
-                      color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
+                      color: COLORS.primaryText,
                     }}
                   >
                     {row[1]}

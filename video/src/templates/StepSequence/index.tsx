@@ -32,8 +32,8 @@ export const StepSequence: React.FC<{ data: StepSequenceData }> = ({ data }) => 
 
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: renderMode === 'overlay' ? 'transparent' : COLORS.lightBg,
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
+    backgroundColor: (layout === 'halfscreen' && renderMode === 'overlay') ? 'transparent' : COLORS.lightBg,
+    color: COLORS.primaryText,
     width: '100%',
     height: '100%',
     position: 'relative',
@@ -175,9 +175,9 @@ export const StepSequence: React.FC<{ data: StepSequenceData }> = ({ data }) => 
   const titleStyle: React.CSSProperties = {
     ...TYPOGRAPHY.h2,
     textTransform: 'uppercase',
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primary,
+    color: COLORS.primary,
     marginBottom: '48px',
-    borderBottom: `2px solid ${renderMode === 'overlay' ? 'rgba(255, 255, 255, 0.2)' : `${COLORS.primary}22`}`,
+    borderBottom: `2px solid ${COLORS.primary}22`,
     paddingBottom: '16px',
     letterSpacing: '0.02em',
   };
@@ -224,8 +224,8 @@ export const StepSequence: React.FC<{ data: StepSequenceData }> = ({ data }) => 
                   transition: 'transform 0.2s ease, opacity 0.2s ease',
                   padding: '16px 24px',
                   borderRadius: '12px',
-                  backgroundColor: isHighlighted ? (renderMode === 'overlay' ? 'rgba(255,255,255,0.08)' : `${COLORS.primary}05`) : 'transparent',
-                  border: isHighlighted ? `1px solid ${renderMode === 'overlay' ? 'rgba(255,255,255,0.2)' : `${COLORS.primary}15`}` : '1px solid transparent',
+                  backgroundColor: isHighlighted ? `${COLORS.primary}05` : 'transparent',
+                  border: isHighlighted ? `1px solid ${COLORS.primary}15` : '1px solid transparent',
                 }}
               >
                 {/* Red Circular Number Badge */}
@@ -253,7 +253,7 @@ export const StepSequence: React.FC<{ data: StepSequenceData }> = ({ data }) => 
                   style={{
                     fontSize: TYPOGRAPHY.body.fontSize,
                     fontWeight: isHighlighted ? '600' : '500',
-                    color: isHighlighted ? (renderMode === 'overlay' ? COLORS.white : COLORS.primaryText) : COLORS.secondaryText,
+                    color: isHighlighted ? COLORS.primaryText : COLORS.secondaryText,
                     transition: 'color 0.2s ease',
                   }}
                 >

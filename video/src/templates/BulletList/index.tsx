@@ -30,7 +30,7 @@ export const BulletList: React.FC<{ data: BulletListData }> = ({ data }) => {
   // In standalone fullscreen mode, render a soft light gray background.
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: renderMode === 'overlay' ? 'transparent' : COLORS.lightBg,
+    backgroundColor: (layout === 'halfscreen' && renderMode === 'overlay') ? 'transparent' : COLORS.lightBg,
     width: '100%',
     height: '100%',
     position: 'relative',
@@ -145,9 +145,9 @@ export const BulletList: React.FC<{ data: BulletListData }> = ({ data }) => {
   const titleStyle: React.CSSProperties = {
     ...TYPOGRAPHY.h2,
     textTransform: 'uppercase',
-    color: renderMode === 'overlay' ? COLORS.white : COLORS.primary,
+    color: COLORS.primary,
     marginBottom: '64px',
-    borderBottom: `2px solid ${renderMode === 'overlay' ? 'rgba(255,255,255,0.2)' : `${COLORS.primary}22`}`,
+    borderBottom: `2px solid ${COLORS.primary}22`,
     paddingBottom: '16px',
     letterSpacing: '0.02em',
   };
@@ -189,7 +189,7 @@ export const BulletList: React.FC<{ data: BulletListData }> = ({ data }) => {
                   fontSize: TYPOGRAPHY.body.fontSize,
                   fontWeight: TYPOGRAPHY.body.fontWeight,
                   lineHeight: TYPOGRAPHY.body.lineHeight,
-                  color: renderMode === 'overlay' ? COLORS.white : COLORS.primaryText,
+                  color: COLORS.primaryText,
                 }}
               >
                 {/* Upgrad Red Circular Bullet Point */}

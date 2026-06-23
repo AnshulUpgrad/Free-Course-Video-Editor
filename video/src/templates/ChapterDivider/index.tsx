@@ -12,7 +12,6 @@ export interface ChapterDividerData {
 export const ChapterDivider: React.FC<{ data: ChapterDividerData }> = ({ data }) => {
   const module = data?.module ?? 'MODULE 01';
   const title = data?.title ?? 'Chapter Title';
-  const renderMode = data?.renderMode ?? 'fullscreen';
 
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -44,7 +43,7 @@ export const ChapterDivider: React.FC<{ data: ChapterDividerData }> = ({ data })
 
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: renderMode === 'overlay' ? 'transparent' : COLORS.primary,
+    backgroundColor: COLORS.primary,
     color: COLORS.white,
     width: '100%',
     height: '100%',

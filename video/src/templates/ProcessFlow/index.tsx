@@ -10,7 +10,6 @@ export interface ProcessFlowData {
 
 export const ProcessFlow: React.FC<{ data: ProcessFlowData }> = ({ data }) => {
   const nodes = data?.nodes ?? [];
-  const isOverlay = data?.isOverlay ?? false;
 
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -18,7 +17,7 @@ export const ProcessFlow: React.FC<{ data: ProcessFlowData }> = ({ data }) => {
 
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: isOverlay ? 'transparent' : COLORS.lightBg,
+    backgroundColor: COLORS.lightBg,
     color: COLORS.primaryText,
     width: '100%',
     height: '100%',

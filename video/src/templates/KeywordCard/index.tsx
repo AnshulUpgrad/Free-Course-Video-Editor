@@ -9,9 +9,7 @@ export interface KeywordCardData {
 }
 
 export const KeywordCard: React.FC<{ data: KeywordCardData }> = ({ data }) => {
-  // Safe fallback if data is missing or ill-formatted
   const keyword = data?.keyword ?? 'KEYWORD';
-  const renderMode = data?.renderMode ?? 'fullscreen';
 
   const { entryProgress, exitProgress, combined } = useTransitionProgress();
 
@@ -34,7 +32,7 @@ export const KeywordCard: React.FC<{ data: KeywordCardData }> = ({ data }) => {
 
   const containerStyle: React.CSSProperties = {
     fontFamily: TYPOGRAPHY.fontFamily,
-    backgroundColor: renderMode === 'overlay' ? 'transparent' : COLORS.primary,
+    backgroundColor: COLORS.primary,
     color: COLORS.white,
     display: 'flex',
     flexDirection: 'column',
