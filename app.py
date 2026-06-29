@@ -20,11 +20,14 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for local cross-origin development
 
 # Configure directories
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
-TRANSCRIPTION_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'transcriptions')
-TIMELINES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'timelines')
-VIDEO_PUBLIC_UPLOADS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'video', 'public', 'uploads')
-RENDER_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'renders')
+is_cloud_run = os.environ.get('K_SERVICE') is not None
+base_dir = '/app/gcs' if is_cloud_run else os.path.dirname(os.path.abspath(__file__))
+
+UPLOAD_FOLDER = os.path.join(base_dir, 'uploads')
+TRANSCRIPTION_FOLDER = os.path.join(base_dir, 'transcriptions')
+TIMELINES_FOLDER = os.path.join(base_dir, 'timelines')
+VIDEO_PUBLIC_UPLOADS = os.path.join(base_dir, 'video_public_uploads') if is_cloud_run else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'video', 'public', 'uploads')
+RENDER_FOLDER = os.path.join(base_dir, 'renders')
 PROMPTS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'prompts')
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)

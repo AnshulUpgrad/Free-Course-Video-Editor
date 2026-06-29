@@ -10,9 +10,13 @@ logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 VIDEO_DIR = os.path.join(BASE_DIR, 'video')
-TIMELINES_FOLDER = os.path.join(BASE_DIR, 'timelines')
-RENDER_FOLDER = os.path.join(BASE_DIR, 'renders')
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
+
+is_cloud_run = os.environ.get('K_SERVICE') is not None
+write_base_dir = '/app/gcs' if is_cloud_run else BASE_DIR
+
+TIMELINES_FOLDER = os.path.join(write_base_dir, 'timelines')
+RENDER_FOLDER = os.path.join(write_base_dir, 'renders')
+UPLOAD_FOLDER = os.path.join(write_base_dir, 'uploads')
 
 FPS = 30
 TARGET_CHUNK_DURATION_SEC = 20
