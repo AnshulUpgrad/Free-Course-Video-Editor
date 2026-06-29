@@ -96,6 +96,120 @@ def upload_file():
         
     return jsonify({'error': 'File type not allowed'}), 400
 
+@app.route('/api/upload/signed-url', methods=['POST'])
+def get_upload_signed_url():
+    """
+    Generates a GCS signed PUT URL for direct browser uploads.
+    """
+    data = request.json or {}
+    filename = data.get('filename')
+    content_type = data.get('contentType')
+    
+    if not filename or not content_type:
+        return jsonify({'error': 'filename and contentType are required'}), 400
+        
+    file_ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+    if file_ext not in ALLOWED_EXTENSIONS:
+        return jsonify({'error': 'File type not allowed'}), 400
+        
+    unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
+    bucket_name = os.environ.get('GCS_BUCKET_NAME', 'upgrad-video-editor-remotion-assets-583143651967')
+    
+    try:
+        from google.cloud import storage
+        import datetime
+        
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(f"uploads/{unique_filename}")
+        
+        signed_url = blob.generate_signed_url(
+            version="v4",
+            expiration=datetime.timedelta(minutes=15),
+            method="PUT",
+            content_type=content_type,
+        )
+        
+        # Save temporary metadata file to FUSE folder
+        base_name = unique_filename.rsplit('.', 1)[0]
+        meta_path = os.path.join(UPLOAD_FOLDER, f"{base_name}.meta.json")
+        
+        meta_data = {
+            'original_filename': filename,
+            'uploaded_at': datetime.datetime.now().isoformat(),
+            'file_size': 0,
+            'status': 'pending'
+        }
+        os.makedirs(os.path.dirname(meta_path), exist_ok=True)
+        with open(meta_path, 'w', encoding='utf-8') as meta_f:
+            json.dump(meta_data, meta_f, indent=2, ensure_ascii=False)
+            
+        logger.info(f"Generated signed URL for direct upload: {unique_filename}")
+        return jsonify({
+            'uploadUrl': signed_url,
+            'filename': unique_filename,
+            'original_filename': filename
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error generating signed URL: {e}")
+        return jsonify({'error': f"Failed to generate upload signed URL: {str(e)}"}), 500
+
+@app.route('/api/upload/complete', methods=['POST'])
+def upload_complete():
+    """
+    Called by frontend when direct GCS upload completes.
+    Triggers metadata update and audio extraction.
+    """
+    data = request.json or {}
+    filename = data.get('filename')
+    
+    if not filename:
+        return jsonify({'error': 'filename is required'}), 400
+        
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    if not os.path.exists(filepath):
+        logger.error(f"Upload complete notification failed: file not found at {filepath}")
+        return jsonify({'error': f"File not found in storage: {filename}"}), 404
+        
+    base_name = filename.rsplit('.', 1)[0]
+    meta_path = os.path.join(UPLOAD_FOLDER, f"{base_name}.meta.json")
+    file_size = os.path.getsize(filepath)
+    
+    # Update metadata
+    try:
+        meta_data = {}
+        if os.path.exists(meta_path):
+            with open(meta_path, 'r', encoding='utf-8') as f:
+                meta_data = json.load(f)
+        
+        meta_data['file_size'] = file_size
+        meta_data['status'] = 'completed'
+        
+        with open(meta_path, 'w', encoding='utf-8') as f:
+            json.dump(meta_data, f, indent=2, ensure_ascii=False)
+            
+        logger.info(f"Updated metadata for direct upload completion: {filename}")
+    except Exception as e:
+        logger.error(f"Failed to update metadata for {filename}: {e}")
+        
+    # Trigger audio extraction if it is a video
+    file_ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+    if file_ext in {'mp4', 'webm'}:
+        audio_filename = f"{base_name}.mp3"
+        audio_filepath = os.path.join(UPLOAD_FOLDER, audio_filename)
+        try:
+            extract_audio_from_video(filepath, audio_filepath)
+            logger.info(f"Audio extracted successfully from uploaded video: {audio_filename}")
+        except Exception as e:
+            logger.error(f"Failed to extract audio from video: {e}")
+            return jsonify({'error': f"Audio extraction failed: {str(e)}"}), 500
+            
+    return jsonify({
+        'message': 'File upload processed successfully',
+        'filename': filename
+    }), 200
+
 def extract_audio_from_video(video_path, audio_path):
     """
     Extracts the audio channel from a video file and saves it as an MP3.

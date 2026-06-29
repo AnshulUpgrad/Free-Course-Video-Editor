@@ -280,53 +280,93 @@ async function loadProjectTimeline(projectId) {
 }
 
 // Upload Media File
-function uploadMediaFile(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    
+async function uploadMediaFile(file) {
     uploadFilename.textContent = file.name;
     uploadPercentage.textContent = '0%';
     uploadProgressBar.style.width = '0%';
     uploadProgressContainer.style.display = 'block';
     dropzone.style.display = 'none';
     
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/upload', true);
-    
-    xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-            const percentComplete = Math.round((e.loaded / e.total) * 100);
-            uploadPercentage.textContent = percentComplete + '%';
-            uploadProgressBar.style.width = percentComplete + '%';
-        }
-    };
-    
-    xhr.onload = () => {
-        uploadProgressContainer.style.display = 'none';
-        dropzone.style.display = 'block';
+    try {
+        // 1. Get signed upload URL
+        const signedUrlResponse = await fetch('/api/upload/signed-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                filename: file.name,
+                contentType: file.type || 'application/octet-stream'
+            })
+        });
         
-        if (xhr.status === 200) {
-            const res = JSON.parse(xhr.responseText);
-            showToast('Media uploaded successfully!', 'success');
-            fetchProjects().then(() => {
-                // Select the new project
-                const baseName = res.filename.rsplit ? res.filename.rsplit('.', 1)[0] : res.filename.substring(0, res.filename.lastIndexOf('.'));
-                projectSelector.value = baseName;
-                selectProject(baseName);
-            });
-        } else {
-            const res = JSON.parse(xhr.responseText);
-            showToast('Upload failed: ' + (res.error || 'Unknown error'), 'error');
+        if (!signedUrlResponse.ok) {
+            const errData = await signedUrlResponse.json();
+            throw new Error(errData.error || 'Failed to generate signed URL');
         }
-    };
-    
-    xhr.onerror = () => {
+        
+        const { uploadUrl, filename } = await signedUrlResponse.json();
+        
+        // 2. Perform direct upload to GCS via PUT request using XMLHttpRequest to track progress
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', uploadUrl, true);
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        
+        xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                uploadPercentage.textContent = percentComplete + '%';
+                uploadProgressBar.style.width = percentComplete + '%';
+            }
+        };
+        
+        xhr.onload = async () => {
+            if (xhr.status === 200 || xhr.status === 201) {
+                // 3. Notify backend that upload is complete
+                try {
+                    const completeResponse = await fetch('/api/upload/complete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filename })
+                    });
+                    
+                    uploadProgressContainer.style.display = 'none';
+                    dropzone.style.display = 'block';
+                    
+                    if (completeResponse.ok) {
+                        showToast('Media uploaded successfully!', 'success');
+                        fetchProjects().then(() => {
+                            const baseName = filename.substring(0, filename.lastIndexOf('.'));
+                            projectSelector.value = baseName;
+                            selectProject(baseName);
+                        });
+                    } else {
+                        const errData = await completeResponse.json();
+                        showToast('Upload post-processing failed: ' + (errData.error || 'Unknown error'), 'error');
+                    }
+                } catch (completeErr) {
+                    uploadProgressContainer.style.display = 'none';
+                    dropzone.style.display = 'block';
+                    showToast('Failed to notify backend: ' + completeErr.message, 'error');
+                }
+            } else {
+                uploadProgressContainer.style.display = 'none';
+                dropzone.style.display = 'block';
+                showToast('Upload to GCS failed (Status: ' + xhr.status + ')', 'error');
+            }
+        };
+        
+        xhr.onerror = () => {
+            uploadProgressContainer.style.display = 'none';
+            dropzone.style.display = 'block';
+            showToast('Network error during GCS upload', 'error');
+        };
+        
+        xhr.send(file);
+        
+    } catch (err) {
         uploadProgressContainer.style.display = 'none';
         dropzone.style.display = 'block';
-        showToast('Network error during upload', 'error');
-    };
-    
-    xhr.send(formData);
+        showToast('Upload failed: ' + err.message, 'error');
+    }
 }
 
 // Trigger Transcription (Whisper)
