@@ -68,6 +68,23 @@ def upload_file():
         file.save(filepath)
         logger.info(f"File uploaded successfully: {unique_filename}")
         
+        # Save metadata file
+        try:
+            import json
+            from datetime import datetime
+            base_name = unique_filename.rsplit('.', 1)[0]
+            meta_path = os.path.join(UPLOAD_FOLDER, f"{base_name}.meta.json")
+            meta_data = {
+                'original_filename': file.filename,
+                'uploaded_at': datetime.now().isoformat(),
+                'file_size': os.path.getsize(filepath)
+            }
+            with open(meta_path, 'w', encoding='utf-8') as meta_f:
+                json.dump(meta_data, meta_f, indent=2, ensure_ascii=False)
+            logger.info(f"Saved upload metadata to {meta_path}")
+        except Exception as e:
+            logger.error(f"Failed to save upload metadata: {e}")
+        
         return jsonify({
             'message': 'File uploaded successfully',
             'filename': unique_filename,
@@ -384,7 +401,7 @@ def analyze_script():
 @app.route('/api/render', methods=['POST'])
 def render_video():
     """
-    Spawns Remotion CLI to render the dynamic Showcase composition.
+    Spawns Remotion CLI or Modal serverless execution to render the dynamic Showcase composition.
     Expects JSON body:
       - filename: base audio filename (e.g. sample.mp3)
     """
@@ -404,14 +421,89 @@ def render_video():
     output_filename = f"{base_name}_rendered.mp4"
     output_path = os.path.join(RENDER_FOLDER, output_filename)
     
-    video_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'video')
+    # 1. Check if Modal Rendering is enabled
+    use_modal_render = os.environ.get('USE_MODAL_RENDER', 'false').lower() == 'true'
     
-    logger.info(f"Starting Remotion render for {base_name}...")
+    if use_modal_render:
+        try:
+            import modal
+            logger.info("Initializing Modal Volume connection...")
+            vol = modal.Volume.from_name("video-editor-assets", create_if_missing=True)
+            
+            # Determine source file uploads
+            local_video = os.path.join(UPLOAD_FOLDER, f"{base_name}.mp4")
+            local_audio = os.path.join(UPLOAD_FOLDER, f"{base_name}.mp3")
+            
+            upload_video = False
+            upload_audio = False
+            
+            # Check if video is already in the volume
+            if os.path.exists(local_video):
+                upload_video = True
+                try:
+                    entries = vol.listdir("uploads")
+                    for entry in entries:
+                        if entry.path in (f"uploads/{base_name}.mp4", f"{base_name}.mp4"):
+                            logger.info(f"Video {base_name}.mp4 already exists in Modal Volume. Skipping upload.")
+                            upload_video = False
+                            break
+                except Exception:
+                    pass
+            
+            # Check if audio is already in the volume
+            if os.path.exists(local_audio):
+                upload_audio = True
+                try:
+                    entries = vol.listdir("uploads")
+                    for entry in entries:
+                        if entry.path in (f"uploads/{base_name}.mp3", f"{base_name}.mp3"):
+                            logger.info(f"Audio {base_name}.mp3 already exists in Modal Volume. Skipping upload.")
+                            upload_audio = False
+                            break
+                except Exception:
+                    pass
+            
+            # Sync config and any missing media files
+            logger.info("Uploading assets to Modal Volume...")
+            with vol.batch_upload(force=True) as batch:
+                # Upload timeline JSON configuration
+                batch.put_file(timeline_path, f"timelines/{base_name}.json")
+                if upload_video:
+                    logger.info(f"Uploading {local_video} -> uploads/{base_name}.mp4")
+                    batch.put_file(local_video, f"uploads/{base_name}.mp4")
+                if upload_audio:
+                    logger.info(f"Uploading {local_audio} -> uploads/{base_name}.mp3")
+                    batch.put_file(local_audio, f"uploads/{base_name}.mp3")
+            
+            # Trigger remote render
+            logger.info(f"Triggering remote render on Modal for: {base_name}")
+            render_composition = modal.Function.from_name("video-renderer", "render_composition")
+            rendered_res_filename = render_composition.remote(base_name)
+            
+            # Download output rendered file
+            logger.info(f"Downloading rendered output from Modal Volume: renders/{rendered_res_filename}")
+            with open(output_path, "wb") as f:
+                for chunk in vol.read_file(f"renders/{rendered_res_filename}"):
+                    f.write(chunk)
+                    
+            logger.info(f"Modal rendering completed successfully: {output_path}")
+            return jsonify({
+                'message': 'Video rendered successfully on Modal',
+                'rendered_file': output_filename,
+                'output_path': output_path
+            }), 200
+            
+        except Exception as modal_err:
+            logger.error(f"Modal rendering failed: {modal_err}. Falling back to local rendering...")
+            # Fall through to local rendering if Modal fails
+            
+    # 2. Local rendering fallback
+    video_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'video')
+    logger.info(f"Starting local Remotion render for {base_name}...")
     logger.info(f"Props: {timeline_path}")
     logger.info(f"Output: {output_path}")
     
-    # Run remotion command using shell=True to handle npx resolve on Windows correctly
-    cmd = f'npx remotion render Showcase "{output_path}" --props="{timeline_path}"'
+    cmd = f'npx remotion render Showcase "{output_path}" --props="{timeline_path}" --codec=h264 --x264-preset=veryfast'
     
     try:
         result = subprocess.run(
@@ -427,7 +519,7 @@ def render_video():
         if result.returncode == 0:
             logger.info(f"Remotion render completed successfully: {output_path}")
             return jsonify({
-                'message': 'Video rendered successfully',
+                'message': 'Video rendered successfully (Local)',
                 'rendered_file': output_filename,
                 'output_path': output_path,
                 'stdout': result.stdout
@@ -458,6 +550,190 @@ def serve_render(filename):
 def serve_upload(filename):
     from flask import send_from_directory
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+@app.route('/')
+def serve_index():
+    return app.send_static_file('index.html')
+
+@app.route('/api/projects', methods=['GET'])
+def get_projects():
+    """
+    Scans uploads and correlates transcriptions, timelines, and renders into projects.
+    """
+    import json
+    from datetime import datetime
+    
+    projects = {}
+    
+    # 1. Scan uploads for primary media and metadata
+    if os.path.exists(UPLOAD_FOLDER):
+        for fname in os.listdir(UPLOAD_FOLDER):
+            # Ignore subdirectories and metadata files in initial sweep
+            if os.path.isdir(os.path.join(UPLOAD_FOLDER, fname)) or fname.endswith('.meta.json') or fname.startswith('img_'):
+                continue
+                
+            base_name, ext = os.path.splitext(fname)
+            ext = ext.lower().lstrip('.')
+            
+            if ext in ALLOWED_EXTENSIONS:
+                # Load metadata if exists
+                meta_path = os.path.join(UPLOAD_FOLDER, f"{base_name}.meta.json")
+                original_filename = fname
+                uploaded_at = datetime.fromtimestamp(os.path.getmtime(os.path.join(UPLOAD_FOLDER, fname))).isoformat()
+                file_size = os.path.getsize(os.path.join(UPLOAD_FOLDER, fname))
+                
+                if os.path.exists(meta_path):
+                    try:
+                        with open(meta_path, 'r', encoding='utf-8') as f:
+                            meta = json.load(f)
+                            original_filename = meta.get('original_filename', original_filename)
+                            uploaded_at = meta.get('uploaded_at', uploaded_at)
+                            file_size = meta.get('file_size', file_size)
+                    except Exception as e:
+                        logger.error(f"Error reading metadata for {fname}: {e}")
+                
+                # Determine type
+                is_video = ext in {'mp4', 'webm'}
+                proj_type = 'video' if is_video else 'audio'
+                
+                projects[base_name] = {
+                    'id': base_name,
+                    'filename': fname,
+                    'original_filename': original_filename,
+                    'uploaded_at': uploaded_at,
+                    'file_size': file_size,
+                    'type': proj_type,
+                    'has_transcription': False,
+                    'has_timeline': False,
+                    'has_render': False,
+                    'render_file': None
+                }
+
+    # 2. Check transcriptions
+    if os.path.exists(TRANSCRIPTION_FOLDER):
+        for fname in os.listdir(TRANSCRIPTION_FOLDER):
+            if fname.endswith('.json'):
+                base_name = os.path.splitext(fname)[0]
+                if base_name in projects:
+                    projects[base_name]['has_transcription'] = True
+                    
+    # 3. Check timelines
+    if os.path.exists(TIMELINES_FOLDER):
+        for fname in os.listdir(TIMELINES_FOLDER):
+            if fname.endswith('.json'):
+                base_name = os.path.splitext(fname)[0]
+                if base_name in projects:
+                    projects[base_name]['has_timeline'] = True
+                    
+    # 4. Check renders
+    if os.path.exists(RENDER_FOLDER):
+        for fname in os.listdir(RENDER_FOLDER):
+            if fname.endswith('_rendered.mp4'):
+                base_name = fname.replace('_rendered.mp4', '')
+                if base_name in projects:
+                    projects[base_name]['has_render'] = True
+                    projects[base_name]['render_file'] = fname
+
+    # Return list sorted by upload date (newest first)
+    project_list = list(projects.values())
+    project_list.sort(key=lambda x: x.get('uploaded_at', ''), reverse=True)
+    return jsonify(project_list), 200
+
+@app.route('/api/timeline/<base_name>', methods=['GET'])
+def get_timeline(base_name):
+    """
+    Returns the timeline JSON content for a project.
+    """
+    import json
+    timeline_path = os.path.join(TIMELINES_FOLDER, f"{base_name}.json")
+    if not os.path.exists(timeline_path):
+        # Fallback to current studio timeline if matching name
+        studio_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'video', 'src', 'timeline.json')
+        if os.path.exists(studio_path):
+            try:
+                with open(studio_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                return jsonify(data), 200
+            except Exception as e:
+                return jsonify({'error': f'Failed to read studio timeline: {e}'}), 500
+        return jsonify({'error': f'Timeline not found for {base_name}'}), 404
+        
+    try:
+        with open(timeline_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({'error': f'Failed to read timeline: {e}'}), 500
+
+@app.route('/api/timeline/<base_name>', methods=['POST'])
+def save_timeline(base_name):
+    """
+    Saves the updated timeline JSON and copies it to the Remotion workspace for hot-reloading.
+    """
+    import json
+    data = request.json
+    if not data or 'timeline' not in data:
+        return jsonify({'error': 'Invalid timeline payload. Must contain a timeline array.'}), 400
+        
+    timeline_path = os.path.join(TIMELINES_FOLDER, f"{base_name}.json")
+    studio_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'video', 'src', 'timeline.json')
+    
+    try:
+        # Save to project timelines folder
+        with open(timeline_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            
+        # Copy to Remotion src folder so Remotion Studio auto-refreshes
+        with open(studio_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            
+        logger.info(f"Successfully saved and synced timeline for {base_name}")
+        return jsonify({'message': 'Timeline saved and synced successfully'}), 200
+    except Exception as e:
+        logger.error(f"Error saving timeline: {e}")
+        return jsonify({'error': f'Failed to save timeline: {e}'}), 500
+
+@app.route('/api/upload-image', methods=['POST'])
+def upload_image():
+    """
+    Saves an uploaded image to the uploads directory and copies it to
+    the Remotion public folder so it can be resolved by staticFile().
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+        
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+        
+    allowed_image_exts = {'png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'}
+    file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+    
+    if file_ext not in allowed_image_exts:
+        return jsonify({'error': f'Image format not supported. Use: {", ".join(allowed_image_exts)}'}), 400
+        
+    # Generate unique name
+    image_filename = f"img_{uuid.uuid4().hex}.{file_ext}"
+    filepath = os.path.join(UPLOAD_FOLDER, image_filename)
+    
+    try:
+        # Save to uploads folder
+        file.save(filepath)
+        
+        # Copy to Remotion public uploads folder
+        dest_path = os.path.join(VIDEO_PUBLIC_UPLOADS, image_filename)
+        shutil.copy2(filepath, dest_path)
+        
+        logger.info(f"Custom image uploaded and copied: {image_filename} -> {dest_path}")
+        
+        return jsonify({
+            'message': 'Image uploaded successfully',
+            'filename': f"uploads/{image_filename}",
+            'url': f"/uploads/{image_filename}"
+        }), 200
+    except Exception as e:
+        logger.error(f"Failed to handle image upload: {e}")
+        return jsonify({'error': f'Image upload failed: {e}'}), 500
 
 if __name__ == '__main__':
     # Run Flask server locally

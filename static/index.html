@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Director's Cockpit - Educational Video AI Editor</title>
+    <!-- Google Fonts: Outfit (Brand headings) & Inter (Body UI text) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-logo">
+            <div class="logo-icon"><i class="fa-solid fa-clapperboard"></i></div>
+            <div class="logo-text">
+                <h1>Director's Cockpit</h1>
+                <span class="logo-sub">Educational Video AI Editor</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="http://localhost:3000" target="_blank" class="btn btn-outline" id="btn-studio-link">
+                <i class="fa-solid fa-laptop-code"></i> Open Remotion Studio
+            </a>
+            <button id="btn-save-sync" class="btn btn-primary btn-glow" disabled>
+                <i class="fa-solid fa-cloud-arrow-up"></i> Save & Sync to Remotion
+            </button>
+        </div>
+    </header>
+
+    <main class="app-layout">
+        <!-- Panel 1: Project Management & Media -->
+        <section class="panel panel-left" aria-label="Media Dashboard">
+            <div class="panel-section upload-section">
+                <h2><i class="fa-solid fa-upload"></i> Upload Media</h2>
+                <div id="dropzone" class="dropzone">
+                    <input type="file" id="file-input" accept="audio/*,video/*" style="display: none;">
+                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                    <p class="dropzone-text">Drag & drop video/audio here or <span>browse</span></p>
+                    <p class="dropzone-sub">MP4, MP3, WAV up to 500MB</p>
+                </div>
+                <div id="upload-progress-container" class="progress-bar-container" style="display: none;">
+                    <div class="progress-info">
+                        <span id="upload-filename">file.mp4</span>
+                        <span id="upload-percentage">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div id="upload-progress-bar" class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section project-section">
+                <h2><i class="fa-solid fa-folder-open"></i> Projects</h2>
+                <div class="control-group">
+                    <label for="project-selector" class="sr-only">Select Project</label>
+                    <div class="select-wrapper">
+                        <select id="project-selector">
+                            <option value="">-- Select or Upload Project --</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                    <button id="btn-refresh-projects" class="btn btn-icon" title="Refresh Projects">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+                <div id="project-meta" class="project-meta-card" style="display: none;">
+                    <div class="meta-row">
+                        <span class="meta-label">Original:</span>
+                        <span id="meta-original-name" class="meta-value">-</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Uploaded:</span>
+                        <span id="meta-uploaded-at" class="meta-value">-</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Type:</span>
+                        <span id="meta-type" class="meta-value badge badge-gray">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section pipeline-section">
+                <h2><i class="fa-solid fa-circle-play"></i> Processing Pipeline</h2>
+                <div class="pipeline-steps">
+                    <!-- Step 1: Transcribe -->
+                    <div class="pipeline-step" id="step-transcribe">
+                        <div class="step-header">
+                            <div class="step-num">1</div>
+                            <span class="step-title">Audio Transcription</span>
+                            <span class="step-status"><i class="fa-regular fa-circle-question"></i> Pending</span>
+                        </div>
+                        <div class="step-controls">
+                            <div class="select-wrapper small-select">
+                                <select id="whisper-model">
+                                    <option value="tiny">tiny (fastest)</option>
+                                    <option value="base" selected>base (balanced)</option>
+                                    <option value="small">small (more accurate)</option>
+                                    <option value="large-v3">large-v3 (slowest/best)</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down select-arrow"></i>
+                            </div>
+                            <button id="btn-transcribe" class="btn btn-secondary btn-sm" disabled>Transcribe</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Analyze Script -->
+                    <div class="pipeline-step" id="step-analyze">
+                        <div class="step-header">
+                            <div class="step-num">2</div>
+                            <span class="step-title">AI Script & Slides Planning</span>
+                            <span class="step-status"><i class="fa-regular fa-circle-question"></i> Pending</span>
+                        </div>
+                        <div class="step-controls">
+                            <div class="select-wrapper small-select">
+                                <select id="llm-model">
+                                    <option value="google/gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
+                                    <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
+                                    <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down select-arrow"></i>
+                            </div>
+                            <button id="btn-analyze" class="btn btn-secondary btn-sm" disabled>Analyze Script</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Render -->
+                    <div class="pipeline-step" id="step-render">
+                        <div class="step-header">
+                            <div class="step-num">3</div>
+                            <span class="step-title">Remotion MP4 Rendering</span>
+                            <span class="step-status"><i class="fa-regular fa-circle-question"></i> Pending</span>
+                        </div>
+                        <div class="step-controls">
+                            <button id="btn-render" class="btn btn-secondary btn-sm w-full" disabled>
+                                <i class="fa-solid fa-video"></i> Start Video Render
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Player Section (Visible when rendered) -->
+            <div class="panel-section preview-section" id="render-preview-container" style="display: none;">
+                <h2><i class="fa-solid fa-circle-check"></i> Rendered Output</h2>
+                <div class="video-preview-wrapper">
+                    <video id="rendered-video-player" controls preload="metadata"></video>
+                </div>
+                <div class="preview-actions">
+                    <a id="btn-download-render" href="#" download class="btn btn-sm btn-outline w-full text-center">
+                        <i class="fa-solid fa-download"></i> Download Rendered MP4
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel 2: Timeline Overview (List of slides) -->
+        <section class="panel panel-middle" aria-label="Slide Timeline">
+            <div class="panel-header-sticky">
+                <h2><i class="fa-solid fa-timeline"></i> Timeline Sequences</h2>
+                <button id="btn-add-slide" class="btn btn-sm btn-outline" disabled>
+                    <i class="fa-solid fa-plus"></i> Add Slide
+                </button>
+            </div>
+            
+            <div id="slides-list" class="slides-list empty-state">
+                <div class="empty-message">
+                    <i class="fa-solid fa-film"></i>
+                    <p>No project loaded. Upload or select a project to display the timeline slides.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel 3: Slide Editor (Form) -->
+        <section class="panel panel-right" aria-label="Slide Editor">
+            <div class="panel-header-sticky">
+                <h2><i class="fa-solid fa-pen-to-square"></i> Slide Details</h2>
+            </div>
+            
+            <div id="slide-editor-container" class="slide-editor-container empty-state">
+                <div class="empty-message">
+                    <i class="fa-solid fa-sliders"></i>
+                    <p>Select a slide from the timeline to edit its contents and properties.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

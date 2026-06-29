@@ -11,3 +11,10 @@ import { enableTailwind } from '@remotion/tailwind-v4';
 Config.setVideoImageFormat("jpeg");
 Config.setOverwriteOutput(true);
 Config.overrideWebpackConfig(enableTailwind);
+
+// Speed Up Optimizations
+Config.setCodec("h264");
+Config.setX264Preset("veryfast");
+Config.setChromiumOpenGlRenderer("angle");
+Config.setHardwareAcceleration("if-possible");
+

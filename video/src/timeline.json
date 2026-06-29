@@ -1,70 +1,648 @@
 {
-  "audioUrl": "uploads/Sample.mp3",
+  "audioUrl": "uploads/a231764ccae5438ea5461c264bcec446.mp3",
   "timeline": [
     {
-      "templateId": "ChapterDivider",
-      "durationInFrames": 1945,
-      "startTime": 0.0,
-      "endTime": 64.86,
       "data": {
-        "module": "MODULE 01",
-        "title": "Foundations of Psychological Testing"
-      }
+        "module": "MODULE TWO",
+        "title": "Coaching Approaches and Theoretical Foundations"
+      },
+      "durationInFrames": 164,
+      "endTime": 5.48,
+      "startTime": 0,
+      "templateId": "ChapterDivider"
     },
     {
-      "templateId": "BulletList",
-      "durationInFrames": 953,
-      "startTime": 64.86,
-      "endTime": 96.64,
       "data": {
-        "title": "The Role of Psychological Testing in Practice",
+        "concept": "Module Overview"
+      },
+      "durationInFrames": 85,
+      "endTime": 8.34,
+      "startTime": 5.48,
+      "templateId": "ConceptCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 271,
+      "endTime": 17.4,
+      "startTime": 8.34,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "title": "Coaching: Not About Giving Advice",
+        "image": "uploads/img_4cea1a8a86674dbc98df4eb7be96920a.png",
+        "variant": "paragraph",
+        "paragraph": "Coaching isn't about giving advice; it's about forming a partnership that encourages people to think, grow, and ultimately change. In Module 1, we explored what coaching is and isn't, and shifted from problem-solving to facilitating awareness and decision-making."
+      },
+      "durationInFrames": 853,
+      "endTime": 45.86,
+      "startTime": 17.4,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 644,
+      "endTime": 67.34,
+      "startTime": 45.86,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "In Module 2, we delve into the \"why\" behind coaching. We'll explore theories and approaches that explain how leaders change their thinking and how coaching operates within complex organizational systems.",
+        "title": "Module 2: The Why Behind Coaching",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 526,
+      "endTime": 84.88,
+      "startTime": 67.34,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 1032,
+      "endTime": 119.3,
+      "startTime": 84.88,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
         "items": [
-          "Test results guide important decisions",
-          "Clinicians rely on tests for diagnosis",
-          "Companies use tests for hiring",
-          "Schools use assessments for support services",
-          "Understanding scores requires knowledge of testing and measurement"
+          "Learn",
+          "Apply",
+          "Reflect"
         ],
-        "layout": "halfscreen"
-      }
+        "layout": "halfscreen",
+        "title": "Session Sequence"
+      },
+      "durationInFrames": 394,
+      "endTime": 132.44,
+      "startTime": 119.3,
+      "templateId": "BulletList"
     },
     {
-      "templateId": "ConceptCard",
-      "durationInFrames": 145,
-      "startTime": 96.64,
-      "endTime": 101.48,
-      "data": {
-        "concept": "Basics of Psychological Testing and Assessment"
-      }
+      "data": {},
+      "durationInFrames": 345,
+      "endTime": 143.94,
+      "startTime": 132.44,
+      "templateId": "FaceOnly"
     },
     {
-      "templateId": "BulletList",
-      "durationInFrames": 756,
-      "startTime": 101.48,
-      "endTime": 126.68,
       "data": {
-        "title": "Module Overview",
+        "module": "SESSION ONE",
+        "title": "The Humanistic Approach"
+      },
+      "durationInFrames": 155,
+      "endTime": 149.14,
+      "startTime": 143.94,
+      "templateId": "ChapterDivider"
+    },
+    {
+      "data": {
+        "concept": "What We Believe About People"
+      },
+      "durationInFrames": 133,
+      "endTime": 153.58,
+      "startTime": 149.14,
+      "templateId": "ConceptCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 1246,
+      "endTime": 195.14,
+      "startTime": 153.58,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "definition": "Begins with the premise that people are not problems to be solved; they are capable of growth.",
+        "term": "Humanistic Approach"
+      },
+      "durationInFrames": 213,
+      "endTime": 202.26,
+      "startTime": 195.14,
+      "templateId": "DefinitionCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 732,
+      "endTime": 226.68,
+      "startTime": 202.26,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "caption": "Impact of Coach's Belief System on Coaching Approach",
+        "nodes": [
+          "Coach approaches client as problem to diagnose",
+          "Coach asks different questions",
+          "Coach holds different silences",
+          "Coach makes different interventions",
+          "Versus",
+          "Coach approaches client as capable professional temporarily stuck in pattern"
+        ]
+      },
+      "durationInFrames": 1165,
+      "endTime": 265.54,
+      "startTime": 226.68,
+      "templateId": "VisualExplanation"
+    },
+    {
+      "data": {},
+      "durationInFrames": 769,
+      "endTime": 291.2,
+      "startTime": 265.54,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
         "items": [
-          "What psychological tests are and their wide use",
-          "How testing developed, different test types, and their fit into assessment",
-          "Who is involved in testing and their responsibilities"
+          "Fostering insight",
+          "Promoting ownership",
+          "Developing trust"
         ],
-        "layout": "halfscreen"
-      }
+        "layout": "halfscreen",
+        "title": "When is Humanistic Coaching Effective?"
+      },
+      "durationInFrames": 592,
+      "endTime": 310.94,
+      "startTime": 291.2,
+      "templateId": "BulletList"
     },
     {
-      "templateId": "Takeaways",
-      "durationInFrames": 468,
-      "startTime": 126.68,
-      "endTime": 142.31,
+      "data": {},
+      "durationInFrames": 515,
+      "endTime": 328.14,
+      "startTime": 310.94,
+      "templateId": "FaceOnly"
+    },
+    {
       "data": {
-        "title": "Module Takeaway",
+        "items": [
+          "Fostering insight",
+          "Promoting ownership",
+          "Developing trust"
+        ],
+        "layout": "halfscreen",
+        "title": "When is Humanistic Coaching Effective?"
+      },
+      "durationInFrames": 349,
+      "endTime": 339.8,
+      "startTime": 328.14,
+      "templateId": "BulletList"
+    },
+    {
+      "data": {
+        "items": [
+          "Client not ready to reflect",
+          "Requires immediate behavioral action",
+          "Client expects clear direction"
+        ],
+        "layout": "halfscreen",
+        "title": "When is Humanistic Coaching Less Effective?"
+      },
+      "durationInFrames": 395,
+      "endTime": 352.98,
+      "startTime": 339.8,
+      "templateId": "BulletList"
+    },
+    {
+      "data": {},
+      "durationInFrames": 1171,
+      "endTime": 392.02,
+      "startTime": 352.98,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "Jordan, a director of strategy, came to his first coaching session with a detailed agenda on team performance issues (misdeadlines, communication breakdowns, low initiative). He was ready for a diagnostic approach.",
+        "title": "Case Example: Jordan's Team Issues",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 720,
+      "endTime": 416.02,
+      "startTime": 392.02,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 391,
+      "endTime": 429.06,
+      "startTime": 416.02,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "Clara, his coach, set the agenda aside and asked about a time when his team worked really well. Jordan described a successful product launch where collaboration was high and results exceeded expectations.",
+        "title": "Clara's Approach: Shifting Perspective",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 816,
+      "endTime": 456.28,
+      "startTime": 429.06,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 459,
+      "endTime": 471.58,
+      "startTime": 456.28,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "definition": "“I think I’ve been managing the team like a portfolio instead of leading it.”",
+        "term": "Jordan's Insight"
+      },
+      "durationInFrames": 187,
+      "endTime": 477.84,
+      "startTime": 471.58,
+      "templateId": "DefinitionCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 216,
+      "endTime": 485.04,
+      "startTime": 477.84,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "Jordan's insight didn't come from Clara's analysis but from the conditions she created. Conditions that made Jordan feel trusted and capable rather than being treated as a problem to solve.",
+        "title": "Creating Conditions for Insight",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 566,
+      "endTime": 503.94,
+      "startTime": 485.04,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 505,
+      "endTime": 520.8,
+      "startTime": 503.94,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "layout": "halfscreen",
         "points": [
-          "Explain historical development and purposes of psychological testing across educational, clinical, and organizational contexts."
+          "Recall a situation where someone approached you as capable.",
+          "How did it affect what you were willing to try or say?",
+          "What specific actions communicated confidence in your capability?",
+          "How did it change your thinking about the situation?"
         ],
-        "layout": "halfscreen"
-      }
+        "title": "Reflection on Being Treated as Capable"
+      },
+      "durationInFrames": 646,
+      "endTime": 542.36,
+      "startTime": 520.8,
+      "templateId": "Takeaways"
+    },
+    {
+      "data": {},
+      "durationInFrames": 353,
+      "endTime": 554.14,
+      "startTime": 542.36,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "concept": "Unconditional Positive Regard"
+      },
+      "durationInFrames": 652,
+      "endTime": 575.9,
+      "startTime": 554.14,
+      "templateId": "ConceptCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 610,
+      "endTime": 596.24,
+      "startTime": 575.9,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "definition": "Accepting the client as a whole person, separate from their current behavior, performance, or assessment of decisions.",
+        "term": "Unconditional Positive Regard"
+      },
+      "durationInFrames": 530,
+      "endTime": 613.92,
+      "startTime": 596.24,
+      "templateId": "DefinitionCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 547,
+      "endTime": 632.18,
+      "startTime": 613.92,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "items": [
+          "Clients making choices you disagree with",
+          "Clients treating people badly",
+          "Clients who are resistant or defensive",
+          "Clients with different values"
+        ],
+        "layout": "halfscreen",
+        "title": "Challenges in Organizational Coaching"
+      },
+      "durationInFrames": 723,
+      "endTime": 656.28,
+      "startTime": 632.18,
+      "templateId": "BulletList"
+    },
+    {
+      "data": {},
+      "durationInFrames": 681,
+      "endTime": 678.98,
+      "startTime": 656.28,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "keyword": "Challenge Without Evaluation"
+      },
+      "durationInFrames": 293,
+      "endTime": 688.78,
+      "startTime": 678.98,
+      "templateId": "KeywordCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 822,
+      "endTime": 716.2,
+      "startTime": 688.78,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "When people feel evaluated instead of respected, they focus on self-protection rather than growth. This dynamic applies to one-on-one coaching, highlighting the importance of psychological safety.",
+        "title": "Psychological Safety and Growth",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 892,
+      "endTime": 745.95,
+      "startTime": 716.2,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 384,
+      "endTime": 758.77,
+      "startTime": 745.95,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "definition": "Stands for Status, Certainty, Autonomy, Relatedness, and Fairness. When any of these domains are threatened, the brain's threat response reduces access to reflective thinking.",
+        "term": "SCARF Model"
+      },
+      "durationInFrames": 496,
+      "endTime": 775.31,
+      "startTime": 758.77,
+      "templateId": "DefinitionCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 489,
+      "endTime": 791.63,
+      "startTime": 775.31,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "Priya was coaching Raphael, a senior manager known for shutting people down in meetings. Feedback showed his behavior was deflating and discouraged open communication.",
+        "title": "Case Example: Priya and Raphael",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 1087,
+      "endTime": 827.87,
+      "startTime": 791.63,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 370,
+      "endTime": 840.21,
+      "startTime": 827.87,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "definition": "“Honestly, most people’s ideas aren’t worth much unless they’ve really thought them through.”",
+        "term": "Raphael's Belief"
+      },
+      "durationInFrames": 433,
+      "endTime": 854.65,
+      "startTime": 840.21,
+      "templateId": "DefinitionCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 765,
+      "endTime": 880.17,
+      "startTime": 854.65,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "Instead of confronting Raphael, Priya asked, \"When did you learn that?\" Raphael, surprised, spoke about early jobs and being punished for being wrong. His confident tone softened, revealing a more complex backstory.",
+        "title": "Priya's Inquiry: Understanding the Root Cause",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 600,
+      "endTime": 900.17,
+      "startTime": 880.17,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 753,
+      "endTime": 925.27,
+      "startTime": 900.17,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "keyword": "Challenging from Respect"
+      },
+      "durationInFrames": 306,
+      "endTime": 935.49,
+      "startTime": 925.27,
+      "templateId": "KeywordCard"
+    },
+    {
+      "data": {
+        "layout": "halfscreen",
+        "points": [
+          "Recall a difficult client, student, or colleague.",
+          "Were you able to separate the person from the behavior?",
+          "What did that require of you?"
+        ],
+        "title": "Reflection: Separating Person from Behavior"
+      },
+      "durationInFrames": 409,
+      "endTime": 949.15,
+      "startTime": 935.49,
+      "templateId": "Takeaways"
+    },
+    {
+      "data": {},
+      "durationInFrames": 1067,
+      "endTime": 984.73,
+      "startTime": 949.15,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "concept": "Autonomy and Client Direction"
+      },
+      "durationInFrames": 899,
+      "endTime": 1014.71,
+      "startTime": 984.73,
+      "templateId": "ConceptCard"
+    },
+    {
+      "data": {
+        "definition": "The client is the author of their own development: they set the direction, define success, and choose what to explore and act on. The coach follows their lead.",
+        "term": "Autonomy in Coaching"
+      },
+      "durationInFrames": 563,
+      "endTime": 1033.51,
+      "startTime": 1014.71,
+      "templateId": "DefinitionCard"
+    },
+    {
+      "data": {},
+      "durationInFrames": 861,
+      "endTime": 1062.21,
+      "startTime": 1033.51,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "Autonomy does not mean a coach is passive. A coach honoring autonomy actively listens, notices patterns, names observations, and asks questions that stretch the client's thinking. The directional movement comes from the client.",
+        "title": "Autonomy vs. Non-Directional",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 1159,
+      "endTime": 1100.85,
+      "startTime": 1062.21,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 562,
+      "endTime": 1119.61,
+      "startTime": 1100.85,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "items": [
+          "Clients wanting direct answers",
+          "Clients expecting guidance from an authority figure",
+          "Imposing a non-directive approach on an unprepared client"
+        ],
+        "layout": "halfscreen",
+        "title": "Limits to Autonomy"
+      },
+      "durationInFrames": 1015,
+      "endTime": 1153.47,
+      "startTime": 1119.61,
+      "templateId": "BulletList"
+    },
+    {
+      "data": {},
+      "durationInFrames": 187,
+      "endTime": 1159.73,
+      "startTime": 1153.47,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "bullets": [
+          "Be explicit about your process and reasons.",
+          "Offer a framework for the client to fill in.",
+          "Check in on the type of help the client seeks."
+        ],
+        "title": "Adapting Application of Autonomy",
+        "variant": "bullets"
+      },
+      "durationInFrames": 1127,
+      "endTime": 1197.33,
+      "startTime": 1159.73,
+      "templateId": "PostcardBullets"
+    },
+    {
+      "data": {},
+      "durationInFrames": 179,
+      "endTime": 1203.31,
+      "startTime": 1197.33,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "Coach Tampson spent two sessions with VP Chen using open questions and following his lead, but Chen was reserved. By session three, Tampson wondered if she was helping.",
+        "title": "Case Example: Tampson and Chen",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 1204,
+      "endTime": 1243.47,
+      "startTime": 1203.31,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 475,
+      "endTime": 1259.33,
+      "startTime": 1243.47,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "paragraph": "Tampson shared observations, explaining she held back to understand before suggesting. She offered to share what she saw if Chen discussed his next steps, leading to Chen's first smile.",
+        "title": "Providing Structured Autonomy",
+        "variant": "paragraph"
+      },
+      "durationInFrames": 761,
+      "endTime": 1284.71,
+      "startTime": 1259.33,
+      "templateId": "PostcardParagraph"
+    },
+    {
+      "data": {},
+      "durationInFrames": 1009,
+      "endTime": 1318.37,
+      "startTime": 1284.71,
+      "templateId": "FaceOnly"
+    },
+    {
+      "data": {
+        "layout": "halfscreen",
+        "points": [
+          "When did you most need direction, not just questions?",
+          "What made autonomy less useful than guidance?",
+          "Consider a specific project, new role, or feedback conversation."
+        ],
+        "title": "Reflecting on Need for Direction"
+      },
+      "durationInFrames": 1047,
+      "endTime": 1353.27,
+      "startTime": 1318.37,
+      "templateId": "Takeaways"
+    },
+    {
+      "data": {},
+      "durationInFrames": 1431,
+      "endTime": 1401,
+      "startTime": 1353.27,
+      "templateId": "FaceOnly"
     }
   ],
-  "videoUrl": "uploads/Sample.MP4"
+  "videoUrl": "uploads/a231764ccae5438ea5461c264bcec446.mp4"
 }

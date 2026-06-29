@@ -236,7 +236,7 @@ def main():
     logger.info(f"Starting Remotion render to {output_path}...")
     
     # Run remotion command using cmd.exe /c to bypass PowerShell restrictions on Windows
-    cmd = f'cmd.exe /c npx remotion render Showcase "{output_path}" --props="{timeline_file}" --overwrite'
+    cmd = f'cmd.exe /c npx remotion render Showcase "{output_path}" --props="{timeline_file}" --codec=h264 --x264-preset=veryfast --overwrite'
     
     try:
         process = subprocess.Popen(

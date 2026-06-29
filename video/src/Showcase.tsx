@@ -59,6 +59,8 @@ export const Showcase: React.FC<ShowcaseProps> = ({ audioUrl, videoUrl, renderMo
       }
       case 'Takeaways':
         return <Takeaways data={data} />;
+      case 'FaceOnly':
+        return null;
       default:
         return <ConceptCard data={{ concept: `Template: ${templateId}`, renderMode: activeRenderMode }} />;
     }
