@@ -28,6 +28,10 @@ export interface ShowcaseProps {
   timeline?: TimelineSlide[];
 }
 
+const isRemoteUrl = (url: string) => {
+  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:');
+};
+
 export const Showcase: React.FC<ShowcaseProps> = ({ audioUrl, videoUrl, renderMode, timeline = [] }) => {
   const activeRenderMode = videoUrl ? 'overlay' : 'fullscreen';
 
@@ -92,8 +96,9 @@ export const Showcase: React.FC<ShowcaseProps> = ({ audioUrl, videoUrl, renderMo
     return renderTemplateOnly(slide.templateId, dataWithMode);
   };
 
-  const resolvedVideoUrl = videoUrl ? staticFile(videoUrl) : null;
-  const resolvedAudioUrl = audioUrl ? staticFile(audioUrl) : null;
+  const resolvedVideoUrl = videoUrl ? (isRemoteUrl(videoUrl) ? videoUrl : staticFile(videoUrl)) : null;
+  const resolvedAudioUrl = audioUrl ? (isRemoteUrl(audioUrl) ? audioUrl : staticFile(audioUrl)) : null;
+
 
   return (
     <>

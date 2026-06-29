@@ -421,6 +421,27 @@ def render_video():
     output_filename = f"{base_name}_rendered.mp4"
     output_path = os.path.join(RENDER_FOLDER, output_filename)
     
+    # 0. Check if GCP Parallel Rendering is enabled
+    use_gcp_render = os.environ.get('USE_GCP_RENDER', 'false').lower() == 'true'
+    
+    if use_gcp_render:
+        try:
+            from gcp_render_scheduler import trigger_parallel_render
+            logger.info(f"Triggering GCP Parallel Render for: {base_name}")
+            success, result = trigger_parallel_render(base_name, timeline_path)
+            
+            if success:
+                logger.info(f"GCP rendering completed successfully: {output_path}")
+                return jsonify({
+                    'message': 'Video rendered successfully on Google Cloud (Parallel)',
+                    'rendered_file': result['rendered_file'],
+                    'output_path': result['output_path']
+                }), 200
+            else:
+                logger.error(f"GCP parallel rendering failed: {result}. Falling back...")
+        except Exception as gcp_err:
+            logger.error(f"GCP parallel rendering failed with exception: {gcp_err}. Falling back...")
+
     # 1. Check if Modal Rendering is enabled
     use_modal_render = os.environ.get('USE_MODAL_RENDER', 'false').lower() == 'true'
     
