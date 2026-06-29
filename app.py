@@ -123,12 +123,17 @@ def get_upload_signed_url():
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(f"uploads/{unique_filename}")
         
-        signed_url = blob.generate_signed_url(
-            version="v4",
-            expiration=datetime.timedelta(minutes=15),
-            method="PUT",
-            content_type=content_type,
-        )
+        service_account_email = os.environ.get('SERVICE_ACCOUNT_EMAIL')
+        signed_url_kwargs = {
+            "version": "v4",
+            "expiration": datetime.timedelta(minutes=15),
+            "method": "PUT",
+            "content_type": content_type,
+        }
+        if service_account_email:
+            signed_url_kwargs["service_account_email"] = service_account_email
+            
+        signed_url = blob.generate_signed_url(**signed_url_kwargs)
         
         # Save temporary metadata file to FUSE folder
         base_name = unique_filename.rsplit('.', 1)[0]
