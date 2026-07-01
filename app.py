@@ -1,4 +1,6 @@
 import os
+import re
+import json
 import uuid
 import logging
 import requests
@@ -398,6 +400,36 @@ def analyze_script():
         logger.error(f"Error in analyze_script service execution: {e}", exc_info=True)
         return jsonify({'error': f'Timeline processing failed: {str(e)}'}), 500
 
+def parse_rendered_frames(log_content):
+    """Parses Remotion verbose output to extract rendered frame indices."""
+    matches = re.findall(r'\[FRAME_RENDER\]\s+["\']*(\d+)', log_content)
+    return sorted(list(set(int(m) for m in matches)))
+
+def generate_frame_audit(base_name, total_frames, rendered_frames):
+    """Generates a JSON audit report of rendered vs expected frames."""
+    expected_frames = set(range(total_frames))
+    rendered_set = set(rendered_frames)
+    missing_frames = sorted(list(expected_frames - rendered_set))
+    
+    audit_data = {
+        'base_name': base_name,
+        'total_expected_frames': total_frames,
+        'rendered_count': len(rendered_set),
+        'missing_count': len(missing_frames),
+        'rendered_frames': sorted(list(rendered_set)),
+        'missing_frames': missing_frames,
+        'status': 'complete' if len(missing_frames) == 0 else 'incomplete'
+    }
+    
+    audit_path = os.path.join(RENDER_FOLDER, f"{base_name}_audit.json")
+    try:
+        with open(audit_path, 'w', encoding='utf-8') as f:
+            json.dump(audit_data, f, indent=2)
+    except Exception as e:
+        logger.error(f"Failed to write frame audit file: {e}")
+        
+    return audit_data
+
 @app.route('/api/render', methods=['POST'])
 def render_video():
     """
@@ -421,117 +453,122 @@ def render_video():
     output_filename = f"{base_name}_rendered.mp4"
     output_path = os.path.join(RENDER_FOLDER, output_filename)
     
-    # 1. Check if Modal Rendering is enabled
-    use_modal_render = os.environ.get('USE_MODAL_RENDER', 'false').lower() == 'true'
+    # 0. Check if GCP Cloud Run Rendering is enabled
+    use_cloudrun_render = os.environ.get('USE_CLOUDRUN_RENDER', 'false').lower() == 'true'
     
-    if use_modal_render:
+    if use_cloudrun_render:
         try:
-            import modal
-            logger.info("Initializing Modal Volume connection...")
-            vol = modal.Volume.from_name("video-editor-assets", create_if_missing=True)
+            from scheduler import run_cloudrun_render
+            bucket_name = os.environ.get('GCP_BUCKET_NAME')
+            service_url = os.environ.get('CLOUDRUN_SERVICE_URL')
+            sa_key_path = os.environ.get('GCP_SA_KEY_PATH') # Optional service account key JSON path
             
-            # Determine source file uploads
+            if not bucket_name or not service_url:
+                raise ValueError("GCP_BUCKET_NAME and CLOUDRUN_SERVICE_URL environment variables must be set when USE_CLOUDRUN_RENDER is true.")
+                
             local_video = os.path.join(UPLOAD_FOLDER, f"{base_name}.mp4")
             local_audio = os.path.join(UPLOAD_FOLDER, f"{base_name}.mp3")
             
-            upload_video = False
-            upload_audio = False
+            logger.info("Triggering GCP Cloud Run parallel render...")
+            run_cloudrun_render(
+                base_name=base_name,
+                timeline_path=timeline_path,
+                local_video_path=local_video if os.path.exists(local_video) else None,
+                local_audio_path=local_audio if os.path.exists(local_audio) else None,
+                local_output_path=output_path,
+                bucket_name=bucket_name,
+                service_url=service_url,
+                sa_key_path=sa_key_path
+            )
             
-            # Check if video is already in the volume
-            if os.path.exists(local_video):
-                upload_video = True
-                try:
-                    entries = vol.listdir("uploads")
-                    for entry in entries:
-                        if entry.path in (f"uploads/{base_name}.mp4", f"{base_name}.mp4"):
-                            logger.info(f"Video {base_name}.mp4 already exists in Modal Volume. Skipping upload.")
-                            upload_video = False
-                            break
-                except Exception:
-                    pass
+            logger.info(f"GCP Cloud Run rendering completed successfully: {output_path}")
             
-            # Check if audio is already in the volume
-            if os.path.exists(local_audio):
-                upload_audio = True
-                try:
-                    entries = vol.listdir("uploads")
-                    for entry in entries:
-                        if entry.path in (f"uploads/{base_name}.mp3", f"{base_name}.mp3"):
-                            logger.info(f"Audio {base_name}.mp3 already exists in Modal Volume. Skipping upload.")
-                            upload_audio = False
-                            break
-                except Exception:
-                    pass
-            
-            # Sync config and any missing media files
-            logger.info("Uploading assets to Modal Volume...")
-            with vol.batch_upload(force=True) as batch:
-                # Upload timeline JSON configuration
-                batch.put_file(timeline_path, f"timelines/{base_name}.json")
-                if upload_video:
-                    logger.info(f"Uploading {local_video} -> uploads/{base_name}.mp4")
-                    batch.put_file(local_video, f"uploads/{base_name}.mp4")
-                if upload_audio:
-                    logger.info(f"Uploading {local_audio} -> uploads/{base_name}.mp3")
-                    batch.put_file(local_audio, f"uploads/{base_name}.mp3")
-            
-            # Trigger remote render
-            logger.info(f"Triggering remote render on Modal for: {base_name}")
-            render_composition = modal.Function.from_name("video-renderer", "render_composition")
-            rendered_res_filename = render_composition.remote(base_name)
-            
-            # Download output rendered file
-            logger.info(f"Downloading rendered output from Modal Volume: renders/{rendered_res_filename}")
-            with open(output_path, "wb") as f:
-                for chunk in vol.read_file(f"renders/{rendered_res_filename}"):
-                    f.write(chunk)
-                    
-            logger.info(f"Modal rendering completed successfully: {output_path}")
+            # Read frame audit file
+            audit_filename = f"{base_name}_audit.json"
+            audit_local_path = os.path.join(RENDER_FOLDER, audit_filename)
+            audit_info = None
+            try:
+                if os.path.exists(audit_local_path):
+                    with open(audit_local_path, "r", encoding="utf-8") as f:
+                        audit_info = json.load(f)
+            except Exception as audit_read_err:
+                logger.warning(f"Could not read frame audit file: {audit_read_err}")
+                
             return jsonify({
-                'message': 'Video rendered successfully on Modal',
+                'message': 'Video rendered successfully on Google Cloud Run',
                 'rendered_file': output_filename,
-                'output_path': output_path
+                'output_path': output_path,
+                'audit': audit_info
             }), 200
             
-        except Exception as modal_err:
-            logger.error(f"Modal rendering failed: {modal_err}. Falling back to local rendering...")
-            # Fall through to local rendering if Modal fails
+        except Exception as cr_err:
+            logger.error(f"GCP Cloud Run rendering failed: {cr_err}. Falling back to other renderers...")
             
-    # 2. Local rendering fallback
+    # 1. Local rendering fallback
     video_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'video')
     logger.info(f"Starting local Remotion render for {base_name}...")
     logger.info(f"Props: {timeline_path}")
     logger.info(f"Output: {output_path}")
     
-    cmd = f'npx remotion render Showcase "{output_path}" --props="{timeline_path}" --codec=h264 --x264-preset=veryfast'
+    npx_cmd = "npx.cmd" if os.name == "nt" else "npx"
+    cmd = f'{npx_cmd} remotion render Showcase "{output_path}" --props="{timeline_path}" --codec=h264 --x264-preset=veryfast --log=verbose'
     
     try:
-        result = subprocess.run(
+        process = subprocess.Popen(
             cmd,
             cwd=video_dir,
             shell=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
-            timeout=600
+            bufsize=1
         )
         
-        if result.returncode == 0:
+        log_lines = []
+        for line in iter(process.stdout.readline, ""):
+            stripped = line.strip()
+            if stripped:
+                print(stripped)
+                log_lines.append(stripped)
+                
+        process.stdout.close()
+        return_code = process.wait(timeout=600)
+        
+        combined_log = "\n".join(log_lines)
+        
+        if return_code == 0:
             logger.info(f"Remotion render completed successfully: {output_path}")
+            
+            # Audit rendered frames
+            rendered_frames = parse_rendered_frames(combined_log)
+            
+            total_frames = 0
+            try:
+                with open(timeline_path, 'r', encoding='utf-8') as f:
+                    timeline_data = json.load(f)
+                from scheduler import get_timeline_duration
+                total_frames = get_timeline_duration(timeline_data)
+            except Exception as duration_err:
+                logger.error(f"Could not calculate expected frames for audit: {duration_err}")
+                total_frames = len(rendered_frames)
+                
+            audit_info = generate_frame_audit(base_name, total_frames, rendered_frames)
+            logger.info(f"Local frame render audit completed. Status: {audit_info['status']}. Missing: {audit_info['missing_count']} frames.")
+            
             return jsonify({
                 'message': 'Video rendered successfully (Local)',
                 'rendered_file': output_filename,
                 'output_path': output_path,
-                'stdout': result.stdout
+                'audit': audit_info,
+                'stdout': combined_log
             }), 200
         else:
-            logger.error(f"Remotion render failed with code {result.returncode}")
-            logger.error(f"stderr: {result.stderr}")
+            logger.error(f"Remotion render failed with code {return_code}")
             return jsonify({
                 'error': 'Remotion rendering process failed',
-                'returncode': result.returncode,
-                'stdout': result.stdout,
-                'stderr': result.stderr
+                'returncode': return_code,
+                'stdout': combined_log,
+                'stderr': ''
             }), 500
             
     except subprocess.TimeoutExpired as e:
@@ -633,6 +670,15 @@ def get_projects():
                 if base_name in projects:
                     projects[base_name]['has_render'] = True
                     projects[base_name]['render_file'] = fname
+                    
+                    # Read frame audit if exists
+                    audit_path = os.path.join(RENDER_FOLDER, f"{base_name}_audit.json")
+                    if os.path.exists(audit_path):
+                        try:
+                            with open(audit_path, 'r', encoding='utf-8') as af:
+                                projects[base_name]['audit'] = json.load(af)
+                        except Exception as e:
+                            logger.error(f"Error loading audit file for {base_name}: {e}")
 
     # Return list sorted by upload date (newest first)
     project_list = list(projects.values())

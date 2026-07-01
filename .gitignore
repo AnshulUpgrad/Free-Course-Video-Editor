@@ -21,6 +21,7 @@ video/showcase.mp4
 
 # Environment variables (Secrets)
 .env
+gcp-service-account-key.json
 
 # Runtime / Temp directories
 uploads/

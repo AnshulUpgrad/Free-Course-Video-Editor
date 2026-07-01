@@ -52,6 +52,14 @@ const renderPreviewContainer = document.getElementById('render-preview-container
 const renderedVideoPlayer = document.getElementById('rendered-video-player');
 const btnDownloadRender = document.getElementById('btn-download-render');
 
+// Audit Panel Elements
+const auditContainer = document.getElementById('audit-container');
+const auditStatusBadge = document.getElementById('audit-status-badge');
+const auditTotalFrames = document.getElementById('audit-total-frames');
+const auditRenderedFrames = document.getElementById('audit-rendered-frames');
+const auditMissingRow = document.getElementById('audit-missing-row');
+const auditMissingFrames = document.getElementById('audit-missing-frames');
+
 const btnAddSlide = document.getElementById('btn-add-slide');
 const btnSaveSync = document.getElementById('btn-save-sync');
 const slidesList = document.getElementById('slides-list');
@@ -245,12 +253,38 @@ function updatePipelineUI(proj) {
         renderedVideoPlayer.src = `/renders/${proj.render_file}?t=${new Date().getTime()}`;
         btnDownloadRender.href = `/renders/${proj.render_file}`;
         renderPreviewContainer.style.display = 'block';
+
+        // Update audit information
+        if (proj.audit) {
+            auditContainer.style.display = 'block';
+            auditTotalFrames.textContent = proj.audit.total_expected_frames || 0;
+            auditRenderedFrames.textContent = proj.audit.rendered_count || 0;
+            
+            if (proj.audit.status === 'complete') {
+                auditStatusBadge.textContent = 'Complete';
+                auditStatusBadge.className = 'badge badge-green';
+                auditMissingRow.style.display = 'none';
+            } else {
+                auditStatusBadge.textContent = 'Incomplete';
+                auditStatusBadge.className = 'badge badge-red';
+                auditMissingRow.style.display = 'block';
+                const missing = proj.audit.missing_frames || [];
+                if (missing.length > 10) {
+                    auditMissingFrames.textContent = missing.slice(0, 10).join(', ') + `... (+ ${missing.length - 10} more)`;
+                } else {
+                    auditMissingFrames.textContent = missing.join(', ') || 'None';
+                }
+            }
+        } else {
+            auditContainer.style.display = 'none';
+        }
     } else {
         stepRender.className = proj.has_timeline ? 'pipeline-step active' : 'pipeline-step';
         step3Status.innerHTML = proj.has_timeline ? '<i class="fa-solid fa-circle-play"></i> Ready' : '<i class="fa-regular fa-circle-question"></i> Pending';
         btnRender.disabled = !proj.has_timeline;
         btnRender.textContent = 'Start Video Render';
         renderPreviewContainer.style.display = 'none';
+        auditContainer.style.display = 'none';
     }
 }
 

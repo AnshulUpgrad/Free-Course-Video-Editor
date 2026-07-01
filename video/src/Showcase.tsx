@@ -1,5 +1,5 @@
 import React from 'react';
-import { Series, Audio, Video, staticFile, AbsoluteFill } from 'remotion';
+import { Series, Audio, Video, OffthreadVideo, staticFile, AbsoluteFill, useCurrentFrame } from 'remotion';
 import { ChapterDivider } from './templates/ChapterDivider';
 import { ConceptCard } from './templates/ConceptCard';
 import { KeywordCard } from './templates/KeywordCard';
@@ -30,6 +30,8 @@ export interface ShowcaseProps {
 
 export const Showcase: React.FC<ShowcaseProps> = ({ audioUrl, videoUrl, renderMode, timeline = [] }) => {
   const activeRenderMode = videoUrl ? 'overlay' : 'fullscreen';
+  const frame = useCurrentFrame();
+  console.log(`[FRAME_RENDER] ${frame}`);
 
   const renderTemplateOnly = (templateId: string, data: any) => {
     switch (templateId) {
@@ -99,7 +101,7 @@ export const Showcase: React.FC<ShowcaseProps> = ({ audioUrl, videoUrl, renderMo
     <>
       {resolvedVideoUrl ? (
         <AbsoluteFill style={{ backgroundColor: '#111827' }}>
-          <Video
+          <OffthreadVideo
             src={resolvedVideoUrl}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
@@ -108,14 +110,16 @@ export const Showcase: React.FC<ShowcaseProps> = ({ audioUrl, videoUrl, renderMo
         resolvedAudioUrl && <Audio src={resolvedAudioUrl} />
       )}
       <Series>
-        {timeline.map((slide, index) => (
-          <Series.Sequence
-            key={`${slide.templateId}-${index}`}
-            durationInFrames={slide.durationInFrames}
-          >
-            {renderSlide(slide)}
-          </Series.Sequence>
-        ))}
+        {[...timeline]
+          .sort((a, b) => a.startTime - b.startTime)
+          .map((slide, index) => (
+            <Series.Sequence
+              key={`${slide.templateId}-${index}`}
+              durationInFrames={slide.durationInFrames}
+            >
+              {renderSlide(slide)}
+            </Series.Sequence>
+          ))}
       </Series>
     </>
   );

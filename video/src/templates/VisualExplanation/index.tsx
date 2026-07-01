@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Img } from 'remotion';
 import { COLORS, TYPOGRAPHY, LAYOUT } from '../../design-system/tokens';
 import { useTransitionProgress } from '../../design-system/transitions';
 
@@ -263,7 +263,7 @@ export const VisualExplanation: React.FC<{ data: VisualExplanationData }> = ({ d
         <div style={visualContainerStyle}>
           <div style={imageZoomWrapperStyle}>
             {image ? (
-              <img
+              <Img
                 src={image}
                 alt="Visual Explanation"
                 style={{

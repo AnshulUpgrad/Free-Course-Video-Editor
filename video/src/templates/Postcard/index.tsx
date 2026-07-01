@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, staticFile } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, staticFile, Img } from 'remotion';
 import { COLORS, TYPOGRAPHY, LAYOUT } from '../../design-system/tokens';
 import { useTransitionProgress } from '../../design-system/transitions';
 
@@ -146,7 +146,7 @@ export const Postcard: React.FC<{ data: PostcardData }> = ({ data }) => {
         <div style={visualStyle}>
           <div style={zoomWrapperStyle}>
             {image ? (
-              <img
+              <Img
                 src={image}
                 alt="Postcard Visual"
                 style={{
